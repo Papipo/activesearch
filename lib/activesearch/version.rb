@@ -1,3 +1,3 @@
-module Activesearch
+module ActiveSearch
   VERSION = "0.0.1"
 end

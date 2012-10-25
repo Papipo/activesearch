@@ -1,4 +1,4 @@
-# Activesearch
+# ActiveSearch
 
 This gem allows any class to be indexed by the chosen fulltext search engine.
 

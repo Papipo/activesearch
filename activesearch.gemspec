@@ -5,7 +5,7 @@ require 'activesearch/version'
 
 Gem::Specification.new do |gem|
   gem.name          = "activesearch"
-  gem.version       = Activesearch::VERSION
+  gem.version       = ActiveSearch::VERSION
   gem.authors       = ["Rodrigo Alvarez"]
   gem.email         = ["papipo@gmail.com"]
   gem.description   = %q{ORM agnostic full text search}
