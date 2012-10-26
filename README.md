@@ -22,7 +22,8 @@ Or install it yourself as:
 
 This is not a fulltext search engine, but it's a good solution for those users that don't have access to anything else.
 It works by storing keywords taken from the specified fields and storing them in an Array field, which would be indexed.
-fts() method will return a Mongod::Criteria, so you can chain it with further scopes.
+search() method will return a Mongod::Criteria, so you can chain it with further scopes, like pagination.
+You won't get original documents though.
 
 ## Usage
 
@@ -30,10 +31,11 @@ fts() method will return a Mongod::Criteria, so you can chain it with further sc
       # [...] field definitions if needed
       include ActiveSearch::Engine # "Engine" being your chosen engine ie. "Mongoid"
   
-      search_on :title, :body
+      search_on :title, :body, store: [:title]
     end
     
-    SomeModel.fts("some words") # "fts" for full text search
+    # Access the stored fields so you don't need to fetch the real document
+    SomeModel.search("some words").first.stored["title"]
 
 
 ## Contributing

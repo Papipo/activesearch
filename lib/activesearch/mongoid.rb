@@ -1,4 +1,12 @@
+require 'activesearch/mongoid/model'
+
 module ActiveSearch
+  
+  # TODO: Wrap this so all engines behave consistently
+  def self.search(text)
+    Mongoid::Model.all_in(keywords: text.split)
+  end
+  
   module Mongoid
     def self.included(base)
       base.extend ClassMethods
@@ -6,20 +14,15 @@ module ActiveSearch
     
     module ClassMethods
       def search_on(*fields)
-        field :_keywords, type: Array
-        index :_keywords
-        
-        before_save do
-          self._keywords = []
-          
-          fields.each do |f|
-            self._keywords = self._keywords | self[f].downcase.split if self[f]
+        # TODO: Use inheritable class variables, so ActiveSearch::Mongoid::Model can get fields and options from there
+        self.class_eval <<-EOV
+          after_save do
+            fields = #{fields}
+            options = fields.pop if fields.last.is_a?(Hash)
+            return unless fields.any? { |f| self.send("\#{f}_changed?") }
+            ActiveSearch::Mongoid::Model.reindex(self, fields, options)
           end
-        end
-      end
-      
-      def fts(query)
-        all_in(_keywords: query.split)
+        EOV
       end
     end
   end

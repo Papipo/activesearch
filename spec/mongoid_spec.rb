@@ -10,26 +10,40 @@ class MongoidModel
   field :title, type: String
   field :text,  type: String
   field :junk,  type: String
-  search_on :title, :text
+  search_on :title, :text, store: [:title]
+end
+
+class AnotherMongoidModel
+  include Mongoid::Document
+  include ActiveSearch::Mongoid
+  
+  field :title, type: String
+  search_on :title, :text, store: [:title]
 end
 
 describe ActiveSearch::Mongoid do
   before do
-    MongoidModel.delete_all
+    Mongoid.master.collections.select { |c| c.name != 'system.indexes' }.each(&:drop)
+    
     @findable = MongoidModel.create!(title: "Findable")
     @quite_findable = MongoidModel.create!(title: "Some title", text: "Findable text")
-    MongoidModel.create!(title: "Junk", junk: "Findable junk")
+    @another = AnotherMongoidModel.create!(title: "Another findable title")
+    @junk = MongoidModel.create!(title: "Junk", junk: "Findable junk")
   end
   
   it "should find the expected documents" do
-    MongoidModel.fts("findable").to_a.should == [@findable, @quite_findable]
+    ActiveSearch.search("findable").map { |r| r.stored["title"] }.should == ["Findable", "Some title", "Another findable title"]
   end
   
   it "should store the proper keywords" do
-    @quite_findable._keywords.should == %w{some title findable text}
+    ActiveSearch::Mongoid::Model.where(type: "MongoidModel", original_id: @quite_findable.id).first.keywords.should == %w{some title findable text}
   end
   
   it "should be chainable" do
-    MongoidModel.fts("findable").should respond_to(:where)
+    ActiveSearch.search("findable").should respond_to(:where)
+  end
+  
+  it "should store the specified fields" do
+    ActiveSearch::Mongoid::Model.where(type: "MongoidModel", original_id: @findable.id).first.stored.should == {"title" => "Findable"}
   end
 end
