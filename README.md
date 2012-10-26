@@ -35,7 +35,7 @@ You won't get original documents though.
     end
     
     # Access the stored fields so you don't need to fetch the real document
-    SomeModel.search("some words").first.stored["title"]
+    ActiveSearch.search("some words").first.stored["title"]
 
 
 ## Contributing
