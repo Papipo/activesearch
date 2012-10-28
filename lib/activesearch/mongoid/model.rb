@@ -20,9 +20,17 @@ module ActiveSearch
       end
       
       def refresh_keywords(original, fields)
-        self.keywords = fields.inject([]) do |memo,f|
-          original[f] ? memo | original[f].downcase.split : memo
+        self.keywords = fields.select { |f| original.fields[f.to_s]  }.inject([]) do |memo,f|
+          
+          if original.fields[f.to_s].localized?
+            memo += original.send("#{f}_translations").map do |locale,translation|
+              translation.downcase.split.map { |word| "#{locale}:#{word}"}
+            end.flatten
+          else
+            original[f] ? memo += original[f].downcase.split : memo
+          end
         end
+        self.keywords.uniq!
       end
       
       def self.reindex(original, fields, options)

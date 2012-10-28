@@ -4,7 +4,7 @@ module ActiveSearch
   
   # TODO: Wrap this so all engines behave consistently
   def self.search(text)
-    Mongoid::Model.all_in(keywords: text.split)
+    Mongoid::Model.where(:keywords.in => text.split + text.split.map { |word| "#{I18n.locale}:#{word}"})
   end
   
   module Mongoid
