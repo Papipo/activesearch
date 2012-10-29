@@ -13,7 +13,7 @@ module ActiveSearch
       
       def store_fields(original, fields, options)
         if options && options[:store]
-          (fields & options[:store]).each do |f|
+          options[:store].each do |f|
             self.stored[f] = original[f] if original.send("#{f}_changed?")
           end
         end

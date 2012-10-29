@@ -11,7 +11,7 @@ class MongoidModel
   field :title, type: String
   field :text,  type: String
   field :junk,  type: String
-  search_on :title, :text, store: [:title]
+  search_on :title, :text, store: [:title, :junk]
 end
 
 class AnotherMongoidModel
@@ -36,7 +36,7 @@ describe ActiveSearch::Mongoid do
   before do
     Mongoid.master.collections.select { |c| c.name != 'system.indexes' }.each(&:drop)
     I18n.locale = :en
-    @findable       = MongoidModel.create!(title: "Findable Findable")
+    @findable       = MongoidModel.create!(title: "Findable Findable", junk: "Junk field")
     @quite_findable = MongoidModel.create!(title: "Some title", text: "Findable text")
     @another        = AnotherMongoidModel.create!(title: "Another findable title")
     @junk           = MongoidModel.create!(title: "Junk", junk: "Not Findable junk")
@@ -60,7 +60,7 @@ describe ActiveSearch::Mongoid do
   end
   
   it "should store the specified fields" do
-    ActiveSearch::Mongoid::Model.where(type: "MongoidModel", original_id: @findable.id).first.stored.should == {"title" => "Findable Findable"}
+    ActiveSearch::Mongoid::Model.where(type: "MongoidModel", original_id: @findable.id).first.stored.should == {"title" => "Findable Findable", "junk" => "Junk field"}
   end
   
   it "should be able to find by different locales" do
