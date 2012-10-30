@@ -12,21 +12,29 @@ module ActiveSearch
       base.extend ClassMethods
     end
     
+    protected
+    def reindex
+      ActiveSearch::Mongoid::Model.reindex(self, self.class.search_fields, self.class.search_options)
+    end
+    
+    def deindex
+      ActiveSearch::Mongoid::Model.deindex(self)
+    end
+    
     module ClassMethods
+      def search_options
+        @search_options
+      end
+      
+      def search_fields
+        @search_fields
+      end
+      
       def search_on(*fields)
-        # TODO: Use inheritable class variables, so ActiveSearch::Mongoid::Model can get fields and options from there
-        self.class_eval <<-EOV
-          after_save do
-            fields = #{fields}
-            options = fields.pop if fields.last.is_a?(Hash)
-            return unless fields.any? { |f| self.send("\#{f}_changed?") }
-            ActiveSearch::Mongoid::Model.reindex(self, fields, options)
-          end
-          
-          before_destroy do
-            ActiveSearch::Mongoid::Model.where(type: self.class.to_s, original_id: self.id).destroy
-          end
-        EOV
+        @search_options = fields.pop if fields.last.is_a?(Hash)
+        @search_fields  = fields
+        self.after_save :reindex
+        self.before_destroy :deindex
       end
     end
   end

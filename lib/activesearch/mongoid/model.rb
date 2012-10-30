@@ -38,6 +38,7 @@ module ActiveSearch
       end
       
       def self.reindex(original, fields, options)
+        return unless fields.any? { |f| original.send("#{f}_changed?") }
         doc = self.find_or_initialize_by(type: original.class.to_s, original_id: original.id)
         doc.store_fields(original, fields, options)
         doc.refresh_keywords(original, fields)
