@@ -73,4 +73,8 @@ describe ActiveSearch::Mongoid do
   it "should store localized keywords" do
     ActiveSearch::Mongoid::Model.where(type: "LocalizedMongoidModel", original_id: @localized.id).first.keywords.should == ["en:english", "es:español"]
   end
+  
+  it "should remove destroyed documents from index" do
+    lambda { @localized.destroy }.should change(ActiveSearch::Mongoid::Model, :count).by(-1)
+  end
 end

@@ -33,6 +33,10 @@ module ActiveSearch
         self.keywords.uniq!
       end
       
+      def self.deindex(original)
+        ActiveSearch::Mongoid::Model.where(type: original.class.to_s, original_id: original.id).destroy
+      end
+      
       def self.reindex(original, fields, options)
         doc = self.find_or_initialize_by(type: original.class.to_s, original_id: original.id)
         doc.store_fields(original, fields, options)
