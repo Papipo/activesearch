@@ -4,39 +4,42 @@ This gem allows any class to be indexed by the chosen fulltext search engine.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'activesearch'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install activesearch
-
-## Supported engines
+Depending on the chosen engine, you need to require a dependency and then activesearch on your Gemfile:
 
 ###Mongoid
 
+    gem 'mongoid'
+    gem 'activesearch'
+    
 This is not a fulltext search engine, but it's a good solution for those users that don't have access to anything else.
 It works by storing keywords taken from the specified fields and storing them in an Array field, which would be indexed.
-search() method will return a Mongod::Criteria, so you can chain it with further scopes, like pagination.
-You won't get original documents though.
-
-## Usage
-
-    class SomeModel
-      # [...] field definitions if needed
-      include ActiveSearch::Engine # "Engine" being your chosen engine ie. "Mongoid"
-  
-      search_on :title, :body, store: [:title]
-    end
     
-    # Access the stored fields so you don't need to fetch the real document
-    ActiveSearch.search("some words").first.stored["title"]
+###elasticsearch
 
+    gem 'tire'
+    gem 'activesearch'
+
+##Configuration
+
+Add this to your model:
+      
+    search_by :title, :body, store: [:slug]
+    
+the :store option allows you to retrieve that value but it won't be used for search.
+
+## Querying
+  
+    ActiveSearch.search("some words").first.to_hash["title"]
+  
+You can access the stored fields with to_hash, so you don't need to fetch the real document.
+
+## Testing
+
+Run specs with this command:
+
+    bundle exec parallel_rspec spec/
+
+Since different engines define their own version of ActiveSearch, running specs on a single process will break.
 
 ## Contributing
 

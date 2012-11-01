@@ -1,0 +1,24 @@
+# 2012-10-31 15:41:49:965 [HEAD] ("elastic_search_models")
+#
+curl -I "http://localhost:9200/elastic_search_models"
+
+# 2012-10-31 15:41:49:988 [200]
+#
+# ""
+
+# 2012-10-31 15:41:50:002 [HEAD] ("another_elastic_search_models")
+#
+curl -I "http://localhost:9200/another_elastic_search_models"
+
+# 2012-10-31 15:41:50:002 [200]
+#
+# ""
+
+# 2012-10-31 15:41:50:007 [_search] (["_all"])
+#
+curl -X GET "http://localhost:9200/_all/_search?query%5Bstring%5D=findable&pretty=true" -d '{}'
+
+# 2012-10-31 15:41:50:008 [200] (1 msec)
+#
+# {"took":1,"timed_out":false,"_shards":{"total":10,"successful":10,"failed":0},"hits":{"total":0,"max_score":null,"hits":[]}}
+

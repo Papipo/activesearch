@@ -3,24 +3,28 @@ module ActiveSearch
     class Model
       include ::Mongoid::Document
       
-      field :type, type: String
-      field :original_id, type: BSON::ObjectId
-      field :keywords
-      field :stored, type: Hash, default: {}
+      field :_original_type, type: String
+      field :_original_id, type: BSON::ObjectId
+      field :_keywords
+      field :_stored, type: Hash, default: {}
       
-      index :keywords
-      index [:type, :original_id], unique: true
+      index :_keywords
+      index [:_original_type, :_original_id], unique: true
+      
+      def to_hash
+        _stored
+      end
       
       def store_fields(original, fields, options)
         if options && options[:store]
           options[:store].each do |f|
-            self.stored[f] = original[f] if original.send("#{f}_changed?")
+            self._stored[f] = original[f] if original.send("#{f}_changed?")
           end
         end
       end
       
       def refresh_keywords(original, fields)
-        self.keywords = fields.select { |f| original.fields[f.to_s]  }.inject([]) do |memo,f|
+        self._keywords = fields.select { |f| original.fields[f.to_s]  }.inject([]) do |memo,f|
           
           if original.fields[f.to_s].localized?
             memo += original.send("#{f}_translations").map do |locale,translation|
@@ -30,16 +34,16 @@ module ActiveSearch
             original[f] ? memo += original[f].downcase.split : memo
           end
         end
-        self.keywords.uniq!
+        self._keywords.uniq!
       end
       
       def self.deindex(original)
-        ActiveSearch::Mongoid::Model.where(type: original.class.to_s, original_id: original.id).destroy
+        ActiveSearch::Mongoid::Model.where(_original_type: original.class.to_s, _original_id: original.id).destroy
       end
       
       def self.reindex(original, fields, options)
         return unless fields.any? { |f| original.send("#{f}_changed?") }
-        doc = self.find_or_initialize_by(type: original.class.to_s, original_id: original.id)
+        doc = find_or_initialize_by(_original_type: original.class.to_s, _original_id: original.id)
         doc.store_fields(original, fields, options)
         doc.refresh_keywords(original, fields)
         doc.save

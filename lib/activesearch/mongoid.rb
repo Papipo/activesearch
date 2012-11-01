@@ -4,7 +4,8 @@ module ActiveSearch
   
   # TODO: Wrap this so all engines behave consistently
   def self.search(text)
-    Mongoid::Model.where(:keywords.in => text.split + text.split.map { |word| "#{I18n.locale}:#{word}"})
+    text = text.split(/\s+/)
+    Mongoid::Model.where(:_keywords.in => text + text.map { |word| "#{I18n.locale}:#{word}"})
   end
   
   module Mongoid
@@ -30,11 +31,11 @@ module ActiveSearch
         @search_fields
       end
       
-      def search_on(*fields)
+      def search_by(*fields)
         @search_options = fields.pop if fields.last.is_a?(Hash)
         @search_fields  = fields
-        self.after_save :reindex
-        self.before_destroy :deindex
+        self.after_save    :reindex
+        self.after_destroy :deindex
       end
     end
   end
