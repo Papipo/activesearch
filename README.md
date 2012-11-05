@@ -26,6 +26,7 @@ Add this to your model:
     search_by :title, :body, store: [:slug]
     
 the :store option allows you to retrieve that value but it won't be used for search.
+You can also add :if or :unless conditions in the same way you would do with ActiveModel callbacks.
 
 ## Querying
   

@@ -33,9 +33,10 @@ module ActiveSearch
       
       def search_by(*fields)
         @search_options = fields.pop if fields.last.is_a?(Hash)
+        conditions = {if: @search_options.delete(:if), unless: @search_options.delete(:unless)}
         @search_fields  = fields
-        self.after_save    :reindex
-        self.after_destroy :deindex
+        self.after_save    :reindex, conditions
+        self.after_destroy :deindex, conditions
       end
     end
   end

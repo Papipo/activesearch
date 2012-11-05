@@ -26,6 +26,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       @quite_findable = Object.const_get("#{engine}Model").create(title: "Some title", text: "Findable text")
       @another        = Object.const_get("Another#{engine}Model").create(title: "Another findable title")
       @junk           = Object.const_get("#{engine}Model").create(title: "Junk", junk: "Not Findable junk")
+      @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true)
     end
     
     it "should find the expected documents" do

@@ -10,7 +10,7 @@ module ElasticSearchRefresh
   end
   
   def destroy
-    super.tap { tire.index.refresh; sleep(1) }
+    super.tap { tire.index.refresh }
   end
 end
 
@@ -21,8 +21,9 @@ class ElasticSearchModel < ActiveMimic
   attribute :title
   attribute :text
   attribute :junk
+  attribute :special, default: false
   
-  search_by :title, :text, store: [:title, :junk]
+  search_by :title, :text, store: [:title, :junk], if: lambda { !self.special }
 
 end
 

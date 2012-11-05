@@ -10,7 +10,8 @@ class MongoidModel
   field :title, type: String
   field :text,  type: String
   field :junk,  type: String
-  search_by :title, :text, store: [:title, :junk]
+  field :special, type: Boolean, default: false
+  search_by :title, :text, store: [:title, :junk], unless: :special
 end
 
 class AnotherMongoidModel
