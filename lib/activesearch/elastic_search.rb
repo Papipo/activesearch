@@ -1,4 +1,6 @@
+require 'tire'
 require "active_support/core_ext"
+require "activesearch/base"
 require "activesearch/elastic_search/proxy"
 
 module ActiveSearch
@@ -9,34 +11,55 @@ module ActiveSearch
   
   module ElasticSearch
     def self.included(base)
+      base.extend Base
       base.extend ClassMethods
     end
-  end
-  
-  module ClassMethods
-    def search_by(*fields)
-      include Tire::Model::Search
+    
+    def to_indexable
+      self.attributes.merge(_type: self.elastic_type)
+    end
+    
+    protected
+    def elastic_type
+      @elastic_type ||= self.type.gsub!(/(.)([A-Z])/,'\1_\2').downcase
+    end
+    
+    def elastic_index(&block)
+      Tire.index(elastic_type, &block)
+    end
+    
+    def reindex
+      doc = self.to_indexable
+      properties = self.class.elastic_properties
       
-      options = fields.last.is_a?(Hash) ? fields.pop : {}
-      conditions = { if: options.delete(:if), unless: options.delete(:unless) }
-      
-      mapping do
-        indexes :type
-        indexes :id, as: :original_id
-        fields.each { |f| indexes f }
-        (Array(options[:store]) - fields).each { |f| indexes f, :index => :no }
+      elastic_index do
+        unless exists?
+          create({ mappings: { doc[:_type] => {properties: properties}}})
+        end
+        store doc
       end
-      
-      # Partially taken from Tire::Model::Callbacks
-      
-      if respond_to?(:after_save) && respond_to?(:after_destroy)
-        after_save    lambda { tire.update_index }, conditions
-        after_destroy lambda { tire.update_index }, conditions
+    end
+    
+    def deindex
+      doc = self.to_indexable
+      elastic_index do
+        remove doc
       end
-
-      if respond_to?(:before_destroy) && !instance_methods.map(&:to_sym).include?(:destroyed?)
-        before_destroy { @destroyed = true }
-        class_eval { def destroyed?; !!@destroyed; end; }
+    end
+    
+    module ClassMethods
+      def elastic_properties
+        props = {}
+        
+        search_fields.each_with_object(props) do |field,hash|
+          hash[field] = {type: 'string'}
+        end
+        
+        (Array(search_options[:store]) - search_fields).each_with_object(props) do |field,hash|
+          hash[field] = {type: 'string', :index => :no}
+        end
+        
+        props
       end
     end
   end

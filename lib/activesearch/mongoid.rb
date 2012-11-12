@@ -1,3 +1,4 @@
+require 'activesearch/base'
 require 'activesearch/mongoid/model'
 
 module ActiveSearch
@@ -10,7 +11,7 @@ module ActiveSearch
   
   module Mongoid
     def self.included(base)
-      base.extend ClassMethods
+      base.extend Base
     end
     
     protected
@@ -20,24 +21,6 @@ module ActiveSearch
     
     def deindex
       ActiveSearch::Mongoid::Model.deindex(self)
-    end
-    
-    module ClassMethods
-      def search_options
-        @search_options
-      end
-      
-      def search_fields
-        @search_fields
-      end
-      
-      def search_by(*fields)
-        @search_options = fields.pop if fields.last.is_a?(Hash)
-        conditions = {if: @search_options.delete(:if), unless: @search_options.delete(:unless)}
-        @search_fields  = fields
-        self.after_save    :reindex, conditions
-        self.after_destroy :deindex, conditions
-      end
     end
   end
 end

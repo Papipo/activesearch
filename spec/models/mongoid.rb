@@ -19,7 +19,7 @@ class AnotherMongoidModel
   include ActiveSearch::Mongoid
   
   field :title, type: String
-  search_by :title, :text, store: [:title]
+  search_by lambda { [:title, :text, store: [:title]] } # Simulating dynamic options
 end
 
 
@@ -28,5 +28,6 @@ class LocalizedMongoidModel
   include ActiveSearch::Mongoid
   
   field :title, localize: true
-  search_by :title, store: [:title]
+  field :special_type
+  search_by :title, store: [:title], type: :special_type
 end

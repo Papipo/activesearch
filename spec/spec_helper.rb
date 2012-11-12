@@ -9,6 +9,7 @@ class ActiveMimic
   include ActiveAttr::MassAssignment
   
   attribute :id
+  attribute :type
   
   define_model_callbacks :save
   define_model_callbacks :destroy
@@ -17,7 +18,12 @@ class ActiveMimic
     new(attrs).tap(&:save)
   end
   
+  def type
+    self.class.to_s
+  end
+  
   def save
+    self.id = self.class.next_id
     run_callbacks :save do
       true
     end
@@ -27,5 +33,10 @@ class ActiveMimic
     run_callbacks :destroy do
       true
     end
+  end
+  
+  def self.next_id
+    @next_id ||= 0
+    @next_id += 1
   end
 end

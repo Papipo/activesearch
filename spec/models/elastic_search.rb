@@ -1,16 +1,13 @@
-require 'tire'
 require 'activesearch/elastic_search'
-
-Tire.configure { logger File.join(File.dirname(__FILE__), '..', '..', 'log', 'elasticsearch.log'), :level => 'debug' }
 
 module ElasticSearchRefresh
   
   def save
-    super.tap { tire.index.refresh }
+    super.tap { Tire.index('_all') { refresh }}
   end
   
   def destroy
-    super.tap { tire.index.refresh }
+    super.tap { Tire.index('_all') { refresh }}
   end
 end
 
