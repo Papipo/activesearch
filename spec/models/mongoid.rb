@@ -29,5 +29,5 @@ class LocalizedMongoidModel
   
   field :title, localize: true
   field :special_type
-  search_by :title, store: [:title], type: :special_type
+  search_by :title, store: [:title]
 end

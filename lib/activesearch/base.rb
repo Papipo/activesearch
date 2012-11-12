@@ -7,7 +7,7 @@ module ActiveSearch
     end
     
     def search_options
-      search_parameters.last.is_a?(Hash) ? search_parameters.last : search_parameters
+      search_parameters.last.is_a?(Hash) ? search_parameters.last : {}
     end
     
     def search_conditions
