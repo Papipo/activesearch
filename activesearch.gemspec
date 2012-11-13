@@ -18,6 +18,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   
   gem.add_development_dependency "rspec"
+  gem.add_development_dependency "rspec-mocks"
   gem.add_development_dependency "bson_ext"
   gem.add_development_dependency "active_attr"
   gem.add_development_dependency "mongoid", "~> 2"
