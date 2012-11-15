@@ -1,7 +1,10 @@
+require "active_support/core_ext/class/attribute"
+
 module ActiveSearch
   module Base
     def self.included(parent)
       parent.extend ClassMethods
+      parent.class_attribute :search_parameters, instance_reader: false
     end
     
     def search_options
@@ -24,12 +27,9 @@ module ActiveSearch
       def search_by(params, conditions = {})
         after_save    :reindex, conditions
         after_destroy :deindex, conditions
-        @search_parameters = params
+        self.search_parameters = params
       end
       
-      def search_parameters
-        @search_parameters
-      end
     end
   end
 end
