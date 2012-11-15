@@ -30,7 +30,7 @@ The second parameter must be a conditions hash.**
 
 the :store option allows you to store that value in the index but it won't be used for search.
 You can also add :if or :unless conditions in the same way you would do with ActiveModel callbacks.
-If you need dynamic options, pass a symbol instead:
+If you need virtual options, pass a symbol instead:
 
     search_by :options_for_search
     

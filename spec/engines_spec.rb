@@ -30,10 +30,11 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
     end
     
     it "should find the expected documents" do
-      results = ActiveSearch.search("findable").map { |doc| doc.to_hash.select { |k,v| %w[title junk].include?(k.to_s) } }
+      results = ActiveSearch.search("findable").map { |doc| doc.to_hash.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
       results.sort_by { |result| result["title"] }.should == [
           {
-            "title"  => "Another findable title"
+            "title"   => "Another findable title",
+            "virtual" =>  "virtual"
           },
           {
             "title"  => "Findable Findable",

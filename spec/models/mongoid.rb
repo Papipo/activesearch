@@ -22,7 +22,11 @@ class AnotherMongoidModel
   search_by :options_for_search
   
   def options_for_search
-    [:title, :text, store: [:title]]
+    [:title, :text, store: [:title, :virtual]]
+  end
+  
+  def virtual
+    "virtual"
   end
 end
 

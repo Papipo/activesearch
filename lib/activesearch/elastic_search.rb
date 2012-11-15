@@ -17,7 +17,9 @@ module ActiveSearch
     end
     
     def to_indexable
-      self.attributes.merge(_type: self.elastic_type)
+      elastic_properties.keys.inject({_type: self.elastic_type}) do |memo,field|
+        memo.merge(field => self.send(field))
+      end
     end
     
     protected
@@ -49,7 +51,7 @@ module ActiveSearch
     end
     
     def elastic_properties
-      props = {}
+      props = {id: {type: 'string'}}
       
       search_fields.each_with_object(props) do |field,hash|
         hash[field] = {type: 'string'}

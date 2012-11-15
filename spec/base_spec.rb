@@ -44,7 +44,7 @@ describe ActiveSearch::Base do
     end
   end
   
-  context "search_by with dynamic parameters" do
+  context "search_by with virtual parameters" do
     before do
       @klass.class_eval do
         def options_for_search

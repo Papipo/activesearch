@@ -29,5 +29,9 @@ class AnotherElasticSearchModel < ActiveMimic
   include ElasticSearchRefresh
   
   attribute :title, type: String
-  search_by [:title, store: [:title]]
+  search_by [:title, store: [:title, :virtual]]
+  
+  def virtual
+    "virtual"
+  end
 end

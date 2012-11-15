@@ -19,7 +19,12 @@ module ActiveSearch
         if options && options[:store]
           self._stored = {}
           options[:store].each do |f|
-            self._stored[f] = original[f] if original[f].present?
+            
+            if original.fields[f.to_s] && original.fields[f.to_s].localized?
+              self._stored[f] = original.send("#{f}_translations")
+            else
+              self._stored[f] = original.send(f) if original.send(f).present?
+            end
           end
         end
       end
