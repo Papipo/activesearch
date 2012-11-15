@@ -11,8 +11,9 @@ module ActiveSearch
   
   module ElasticSearch
     def self.included(base)
-      base.extend Base
-      base.extend ClassMethods
+      base.class_eval do
+        include ActiveSearch::Base
+      end
     end
     
     def to_indexable
@@ -30,7 +31,7 @@ module ActiveSearch
     
     def reindex
       doc = self.to_indexable
-      properties = self.class.elastic_properties
+      properties = self.elastic_properties
       
       elastic_index do
         unless exists?
@@ -47,20 +48,18 @@ module ActiveSearch
       end
     end
     
-    module ClassMethods
-      def elastic_properties
-        props = {}
-        
-        search_fields.each_with_object(props) do |field,hash|
-          hash[field] = {type: 'string'}
-        end
-        
-        (Array(search_options[:store]) - search_fields).each_with_object(props) do |field,hash|
-          hash[field] = {type: 'string', :index => :no}
-        end
-        
-        props
+    def elastic_properties
+      props = {}
+      
+      search_fields.each_with_object(props) do |field,hash|
+        hash[field] = {type: 'string'}
       end
+      
+      (Array(search_options[:store]) - search_fields).each_with_object(props) do |field,hash|
+        hash[field] = {type: 'string', :index => :no}
+      end
+      
+      props
     end
   end
 end

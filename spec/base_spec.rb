@@ -3,7 +3,7 @@ require 'activesearch/base'
 describe ActiveSearch::Base do
   before do
     @klass = Class.new do
-      extend ActiveSearch::Base
+      include ActiveSearch::Base
       
       def self.after_save(*args); end
       def self.after_destroy(*args); end
@@ -14,7 +14,7 @@ describe ActiveSearch::Base do
   context "search_by" do
     let(:call_search_by) do
       @klass.class_eval do
-        search_by :field, if: :something_happens, unless: :its_friday
+        search_by [:field], if: :something_happens, unless: :its_friday
       end
     end
     
@@ -26,7 +26,7 @@ describe ActiveSearch::Base do
     
     it "should store the parameters in search_parameters" do
       call_search_by
-      @klass.send(:search_parameters).should == [:field, {if: :something_happens, unless: :its_friday}]
+      @klass.send(:search_parameters).should == [:field]
     end
   end
   
@@ -36,27 +36,32 @@ describe ActiveSearch::Base do
     end
     
     it "search_options should return the hash at the end of the parameters" do
-      @klass.search_options.should == {store: [:another_field]}
+      @klass.new.search_options.should == {store: [:another_field]}
     end
     
     it "search_fields should return all parameters except the options" do
-      @klass.search_fields.should == [:field]
+      @klass.new.search_fields.should == [:field]
     end
   end
   
   context "search_by with dynamic parameters" do
     before do
       @klass.class_eval do
-        def self.options_for_search
-          [:somefield]
+        def options_for_search
+          [@field]
         end
         
-        search_by lambda { options_for_search }
+        def initialize(field)
+          @field = field
+        end
+        
+        search_by :options_for_search
       end
     end
     
     it "should work" do
-      @klass.send(:search_parameters).should == [:somefield]
+      @klass.new(:first).send(:search_parameters).should == [:first]
+      @klass.new(:second).send(:search_parameters).should == [:second]
     end
   end
 

@@ -20,7 +20,7 @@ class ElasticSearchModel < ActiveMimic
   attribute :junk
   attribute :special, default: false
   
-  search_by :title, :text, store: [:title, :junk], if: lambda { !self.special }
+  search_by [:title, :text, store: [:title, :junk]], if: lambda { !self.special }
 
 end
 
@@ -29,5 +29,5 @@ class AnotherElasticSearchModel < ActiveMimic
   include ElasticSearchRefresh
   
   attribute :title, type: String
-  search_by :title, store: [:title]
+  search_by [:title, store: [:title]]
 end

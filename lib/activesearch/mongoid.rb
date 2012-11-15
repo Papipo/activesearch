@@ -11,12 +11,14 @@ module ActiveSearch
   
   module Mongoid
     def self.included(base)
-      base.extend Base
+      base.class_eval do
+        include Base
+      end
     end
     
     protected
     def reindex
-      ActiveSearch::Mongoid::Model.reindex(self, self.class.search_fields, self.class.search_options)
+      ActiveSearch::Mongoid::Model.reindex(self, self.search_fields, self.search_options)
     end
     
     def deindex

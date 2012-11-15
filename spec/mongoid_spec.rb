@@ -10,7 +10,7 @@ class LocalizedMongoidModel
   include ActiveSearch::Mongoid
   
   field :title, localize: true
-  search_by :title, store: [:title]
+  search_by [:title, store: [:title]]
 end
 
 

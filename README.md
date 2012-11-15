@@ -21,18 +21,35 @@ It works by storing keywords taken from the specified fields and storing them in
 
 ##Configuration
 
-Add this to your model:
+call "search_by" from your model:
       
-    search_by :title, :body, store: [:slug]
-    
-the :store option allows you to retrieve that value but it won't be used for search.
+    search_by [:title, :body, store: [:slug]], if: :its_friday
+
+**IMPORTANT: the first parameter must be either an array, or a symbol.
+The second parameter must be a conditions hash.**
+
+the :store option allows you to store that value in the index but it won't be used for search.
 You can also add :if or :unless conditions in the same way you would do with ActiveModel callbacks.
+If you need dynamic options, pass a symbol instead:
+
+    search_by :options_for_search
+    
+And define an instance method with that name which must return an array with the options, ie:
+
+    def options_for_search
+      [:field, :another_field]
+    end
 
 ## Querying
   
     ActiveSearch.search("some words").first.to_hash["title"]
   
 You can access the stored fields with to_hash, so you don't need to fetch the real document.
+
+## Why?
+
+You might wonder why you would like to use ActiveSearch instead of a specific option for your fulltext search index.
+ActiveSearch provides an uniform API, which is in itself a drop-in replacement in case you want to move from an engine to another.
 
 ## Testing
 

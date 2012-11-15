@@ -11,7 +11,7 @@ class MongoidModel
   field :text,  type: String
   field :junk,  type: String
   field :special, type: Boolean, default: false
-  search_by :title, :text, store: [:title, :junk], unless: :special
+  search_by [:title, :text, store: [:title, :junk]], unless: :special
 end
 
 class AnotherMongoidModel
@@ -19,7 +19,11 @@ class AnotherMongoidModel
   include ActiveSearch::Mongoid
   
   field :title, type: String
-  search_by lambda { [:title, :text, store: [:title]] } # Simulating dynamic options
+  search_by :options_for_search
+  
+  def options_for_search
+    [:title, :text, store: [:title]]
+  end
 end
 
 
@@ -29,5 +33,5 @@ class LocalizedMongoidModel
   
   field :title, localize: true
   field :special_type
-  search_by :title, store: [:title]
+  search_by [:title, store: [:title]]
 end
