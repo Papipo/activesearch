@@ -17,8 +17,9 @@ module ActiveSearch
       
       def store_fields(original, fields, options)
         if options && options[:store]
+          self._stored = {}
           options[:store].each do |f|
-            self._stored[f] = original[f] if original.send("#{f}_changed?")
+            self._stored[f] = original[f] if original[f].present?
           end
         end
       end
@@ -42,7 +43,6 @@ module ActiveSearch
       end
       
       def self.reindex(original, fields, options)
-        return unless fields.any? { |f| original.send("#{f}_changed?") }
         doc = find_or_initialize_by(_original_type: original.class.to_s, _original_id: original.id)
         doc.store_fields(original, fields, options)
         doc.refresh_keywords(original, fields)
