@@ -18,7 +18,7 @@ describe ActiveSearch::Mongoid do
   before do
     Mongoid.master.collections.select { |c| c.name != 'system.indexes' }.each(&:drop)
     I18n.locale = :en
-    @localized  = LocalizedMongoidModel.create!(title: "English English")
+    @localized  = LocalizedMongoidModel.create!(title: "<strong>English</strong> English")
     I18n.with_locale(:es) do
       @localized.title = "Español Español"
       @localized.save!
@@ -26,7 +26,7 @@ describe ActiveSearch::Mongoid do
   end
   
   it "should be able to find by different locales" do
-    ActiveSearch.search("english").first._stored["title"]["en"].should == "English English"
+    ActiveSearch.search("english").first._stored["title"]["en"].should == "<strong>English</strong> English"
     I18n.with_locale(:es) do
       ActiveSearch.search("español").first._stored["title"]["es"].should == "Español Español"
     end
@@ -34,5 +34,9 @@ describe ActiveSearch::Mongoid do
   
   it "should store localized keywords" do
     ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should == ["en:english", "es:español"]
+  end
+  
+  it "should strip tags" do
+    ActiveSearch.search("english").first._keywords.should == ['en:english', 'es:español']
   end
 end

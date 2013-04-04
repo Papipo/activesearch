@@ -18,7 +18,7 @@ module ActiveSearch
     
     def to_indexable
       elastic_properties.keys.inject({_type: self.elastic_type}) do |memo,field|
-        memo.merge(field => self.send(field))
+        memo.merge!(field => self.send(field))
       end
     end
     

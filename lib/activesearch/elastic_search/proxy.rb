@@ -17,7 +17,7 @@ module ActiveSearch
       def search
         @search ||= Tire.search('_all') do |search|
           search.query do |query|
-            query.text("_all", @text)
+            query.match("_all", @text)
           end
         end
       end

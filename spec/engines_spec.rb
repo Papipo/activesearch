@@ -24,7 +24,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       cleanup(engine)
       @findable       = Object.const_get("#{engine}Model").create(title: "Findable Findable", junk: "Junk field")
       @quite_findable = Object.const_get("#{engine}Model").create(title: "Some title", text: "Findable text")
-      @another        = Object.const_get("Another#{engine}Model").create(title: "Another findable title")
+      @another        = Object.const_get("Another#{engine}Model").create(title: "Another <strong>findable</strong> title with tags")
       @junk           = Object.const_get("#{engine}Model").create(title: "Junk", junk: "Not Findable junk")
       @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true)
     end
@@ -33,7 +33,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       results = ActiveSearch.search("findable").map { |doc| doc.to_hash.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
       results.sort_by { |result| result["title"] }.should == [
           {
-            "title"   => "Another findable title",
+            "title"   => "Another <strong>findable</strong> title with tags",
             "virtual" =>  "virtual"
           },
           {

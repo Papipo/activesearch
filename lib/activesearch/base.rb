@@ -1,6 +1,15 @@
 require "active_support/core_ext/class/attribute"
 
 module ActiveSearch
+  def self.strip_tags(value)
+    case value
+    when String
+      value.gsub(/<\/?[^>]*>/, '')
+    when Hash
+      value.each { |k,v| value[k] = strip_tags(value[k]) }
+    end
+  end
+  
   module Base
     def self.included(parent)
       parent.extend ClassMethods

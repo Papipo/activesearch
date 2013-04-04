@@ -40,6 +40,7 @@ module ActiveSearch
             original[f] ? memo += original[f].downcase.split : memo
           end
         end
+        self._keywords = self._keywords.map! { |k| ActiveSearch.strip_tags(k) }
         self._keywords.uniq!
       end
       
