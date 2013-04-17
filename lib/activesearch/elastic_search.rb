@@ -1,12 +1,18 @@
 require 'tire'
 require "active_support/core_ext"
 require "activesearch/base"
-require "activesearch/elastic_search/proxy"
+require "activesearch/proxy"
 
 module ActiveSearch
   
   def self.search(text)
-    ElasticSearch::Proxy.new(text)
+    Proxy.new(text) do |text|
+      Tire.search('_all') do |search|
+        search.query do |query|
+          query.match("_all", text)
+        end
+      end.results
+    end
   end
   
   module ElasticSearch

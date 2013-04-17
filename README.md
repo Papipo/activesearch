@@ -18,6 +18,19 @@ It works by storing keywords taken from the specified fields and storing them in
 
     gem 'tire'
     gem 'activesearch'
+    
+###Algolia
+
+    gem 'httparty'
+    gem 'activesearch'
+    
+Then you need to configure the client. In rails, put this in an algolia.rb initializer:
+
+    Algolia.configure do |c|
+      c.api_key = "1234567890"
+      c.app_id = "someapp"
+      c.host = "https://apieu1.algolia.com"
+    end
 
 ##Configuration
 

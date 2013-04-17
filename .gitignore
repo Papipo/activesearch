@@ -1,3 +1,4 @@
+config/algolia.yml
 *.gem
 *.rbc
 .bundle
@@ -16,4 +17,5 @@ test/tmp
 test/version_tmp
 tmp
 log
+
 *.log

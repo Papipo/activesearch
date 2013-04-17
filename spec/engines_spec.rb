@@ -4,6 +4,11 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 def cleanup(engine)
   case engine
+  when "Algolia"
+    YAML.load_file(File.dirname(__FILE__) + '/../config/algolia.yml').tap do |config|
+      ActiveSearch::Algolia::Client.configure(config["api_key"], config["app_id"])
+    end
+    ActiveSearch::Algolia::Client.new.delete_index
   when "ElasticSearch"
     Tire::Configuration.client.delete "#{Tire::Configuration.url}/_all"
     load File.join(File.dirname(__FILE__), 'models', 'elastic_search.rb')

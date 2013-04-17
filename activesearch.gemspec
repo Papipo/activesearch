@@ -26,4 +26,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "mongoid", "~> 2"
   gem.add_development_dependency "tire"
   gem.add_development_dependency "parallel_tests"
+  gem.add_development_dependency "httparty"
 end
