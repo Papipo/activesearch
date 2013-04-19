@@ -4,10 +4,9 @@ require "active_support/core_ext/object/to_json"
 module ActiveSearch::Algolia
   class Client
     include HTTParty
-    # debug_output $stdout
-    base_uri "https://apieu1.algolia.com/1/indexes/activesearch"
-
-    def self.configure(api_key, app_id)
+    
+    def self.configure(api_key, app_id, index = "activesearch")
+      base_uri "https://apieu1.algolia.com/1/indexes/#{index}"
       headers({
         "X-Algolia-API-Key" => api_key,
         "X-Algolia-Application-Id" => app_id,
@@ -20,6 +19,7 @@ module ActiveSearch::Algolia
     end
 
     def delete(id)
+      return false if id.nil?
       self.class.delete("/#{id}")
     end
 
