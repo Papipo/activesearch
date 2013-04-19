@@ -27,8 +27,8 @@ module ActiveSearch::Algolia
       self.class.put("/#{id}", body: object.to_json)
     end
 
-    def query(text)
-      self.class.get("", query: {query: text})
+    def query(text, extras = {})
+      self.class.get("", query: extras.merge!(query: text))
     end
   end
 end

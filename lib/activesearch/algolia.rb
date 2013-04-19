@@ -3,9 +3,10 @@ require "activesearch/base"
 require "activesearch/proxy"
 
 module ActiveSearch
-  def self.search(text)
-    Proxy.new(text) do |text|
-      Algolia::Client.new.query(text)["hits"].map! do |hit|
+  def self.search(text, conditions = {})
+    Proxy.new(text, conditions) do |text, conditions|
+      
+      Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
             k, v = tag.split(':')
@@ -16,6 +17,11 @@ module ActiveSearch
         hit
       end
     end
+  end
+  
+  protected
+  def self.conditions_to_tags(conditions)
+    conditions.map { |c| c.join(':') }.join(',')
   end
   
   module Algolia

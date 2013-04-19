@@ -27,15 +27,16 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
     
     before do
       cleanup(engine)
-      @findable       = Object.const_get("#{engine}Model").create(title: "Findable Findable", junk: "Junk field")
-      @quite_findable = Object.const_get("#{engine}Model").create(title: "Some title", text: "Findable text")
-      @another        = Object.const_get("Another#{engine}Model").create(title: "Another <strong>findable</strong> title with tags")
-      @junk           = Object.const_get("#{engine}Model").create(title: "Junk", junk: "Not Findable junk")
-      @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true)
+      @findable       = Object.const_get("#{engine}Model").create(title: "Findable Findable", junk: "Junk field", scope_id: 1)
+      @quite_findable = Object.const_get("#{engine}Model").create(title: "Some title", text: "Findable text", scope_id: 1)
+      @another        = Object.const_get("Another#{engine}Model").create(title: "Another <strong>findable</strong> title with tags", scope_id: 1)
+      @junk           = Object.const_get("#{engine}Model").create(title: "Junk", junk: "Not Findable junk", scope_id: 1)
+      @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true, scope_id: 1)
+      @foreign        = Object.const_get("#{engine}Model").create(title: "Findable", scope_id: 2)
     end
     
     it "should find the expected documents" do
-      results = ActiveSearch.search("findable").map { |doc| doc.to_hash.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
+      results = ActiveSearch.search("findable", scope_id: 1).map { |doc| doc.to_hash.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
       results.sort_by { |result| result["title"] }.should == [
           {
             "title"   => "Another <strong>findable</strong> title with tags",
@@ -55,7 +56,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
 
     it "should remove destroyed documents from index" do
       @findable.destroy
-      ActiveSearch.search("findable").count.should == 2
+      ActiveSearch.search("findable").count.should == 3
     end
   end
 end

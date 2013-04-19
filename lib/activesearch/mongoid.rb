@@ -3,10 +3,11 @@ require 'activesearch/mongoid/model'
 
 module ActiveSearch
   
-  # TODO: Wrap this so all engines behave consistently
-  def self.search(text)
+  def self.search(text, conditions = {})
     text = text.split(/\s+/)
-    Mongoid::Model.where(:_keywords.in => text + text.map { |word| "#{I18n.locale}:#{word}"})
+    conditions.keys.each { |k| conditions["_stored.#{k}"] = conditions.delete(k) }
+    conditions.merge!(:_keywords.in => text + text.map { |word| "#{I18n.locale}:#{word}"})
+    Mongoid::Model.where(conditions)
   end
   
   module Mongoid
