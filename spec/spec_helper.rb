@@ -18,6 +18,10 @@ class ActiveMimic
     new(attrs).tap(&:save)
   end
   
+  def indexable_id
+    "#{self.class.to_s}_#{self.id}"
+  end
+  
   def type
     self.class.to_s
   end

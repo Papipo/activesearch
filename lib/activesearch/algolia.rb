@@ -27,15 +27,11 @@ module ActiveSearch
     
     protected
     def reindex
-      algolia_client.save(algolia_id, self.to_indexable)
+      algolia_client.save(indexable_id, self.to_indexable)
     end
     
     def deindex
-      algolia_client.delete(algolia_id)
-    end
-    
-    def algolia_id
-      raise "You must define this method in your model."
+      algolia_client.delete(indexable_id)
     end
     
     def to_indexable

@@ -1,14 +1,7 @@
 require 'activesearch/algolia'
 
-module AlgoliaId
-  def algolia_id
-    "#{self.class.to_s}_#{self.id}"
-  end
-end
-
 class AlgoliaModel < ActiveMimic
   include ActiveSearch::Algolia
-  include AlgoliaId
   
   attribute :title
   attribute :text
@@ -21,7 +14,6 @@ end
 
 class AnotherAlgoliaModel < ActiveMimic
   include ActiveSearch::Algolia
-  include AlgoliaId
   
   attribute :title, type: String
   search_by [:title, store: [:title, :virtual]]
