@@ -7,13 +7,10 @@ module ActiveSearch
       field :_original_id, type: BSON::ObjectId
       field :_keywords
       field :_stored, type: Hash, default: {}
+      alias_method :to_hash, :_stored
       
       index :_keywords
       index [:_original_type, :_original_id], unique: true
-      
-      def to_hash
-        _stored
-      end
       
       def store_fields(original, fields, options)
         if options && options[:store]

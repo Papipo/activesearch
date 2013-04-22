@@ -26,17 +26,13 @@ describe ActiveSearch::Mongoid do
   end
   
   it "should be able to find by different locales" do
-    ActiveSearch.search("english").first._stored["title"]["en"].should == "<strong>English</strong> English"
+    ActiveSearch.search("english").first["title"]["en"].should == "<strong>English</strong> English"
     I18n.with_locale(:es) do
-      ActiveSearch.search("español").first._stored["title"]["es"].should == "Español Español"
+      ActiveSearch.search("español").first["title"]["es"].should == "Español Español"
     end
   end
   
-  it "should store localized keywords" do
+  it "should store localized keywords with tags stripped" do
     ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should == ["en:english", "es:español"]
-  end
-  
-  it "should strip tags" do
-    ActiveSearch.search("english").first._keywords.should == ['en:english', 'es:español']
   end
 end

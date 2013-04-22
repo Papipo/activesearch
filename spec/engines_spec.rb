@@ -36,7 +36,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
     end
     
     it "should find the expected documents" do
-      results = ActiveSearch.search("findable", scope_id: 1).map { |doc| doc.to_hash.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
+      results = ActiveSearch.search("findable", scope_id: 1).map { |doc| doc.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
       results.sort_by { |result| result["title"] }.should == [
           {
             "title"   => "Another <strong>findable</strong> title with tags",

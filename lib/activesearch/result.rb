@@ -5,9 +5,5 @@ module ActiveSearch
         self[k.to_s] = v unless v.nil?
       end
     end
-    
-    def attributes
-      self
-    end
   end
 end
