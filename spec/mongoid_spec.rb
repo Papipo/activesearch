@@ -26,9 +26,9 @@ describe ActiveSearch::Mongoid do
   end
   
   it "should be able to find by different locales" do
-    ActiveSearch.search("english").first["title"]["en"].should == "<strong>English</strong> English"
+    ActiveSearch.search("english").first["title"].should == "<strong>English</strong> English"
     I18n.with_locale(:es) do
-      ActiveSearch.search("español").first["title"]["es"].should == "Español Español"
+      ActiveSearch.search("español").first["title"].should == "Español Español"
     end
   end
   
