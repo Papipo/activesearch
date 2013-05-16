@@ -6,6 +6,11 @@ This gem allows any class to be indexed by the chosen fulltext search engine.
 
 Depending on the chosen engine, you need to require a dependency and then activesearch on your Gemfile:
 
+## Mongoid 2.x users
+
+If you are using mongoid 2.x, you should use ```gem 'activesearch', '~> 0.0.16'```.
+What lies below is for mongoid 3.x.
+
 ###Mongoid
 
     gem 'mongoid'
