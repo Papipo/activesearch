@@ -6,7 +6,7 @@ module ActiveSearch
   
   def self.search(text, conditions = {})
     Proxy.new(text, conditions) do |text, conditions|
-      text = text.split(/\s+/)
+      text = text.downcase.split(/\s+/)
       conditions.keys.each { |k| conditions["_stored.#{k}"] = conditions.delete(k) }
       conditions.merge!(:_keywords.in => text + text.map { |word| "#{I18n.locale}:#{word}"})
       Mongoid::Model.where(conditions)

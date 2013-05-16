@@ -53,6 +53,10 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       ActiveSearch.search("some text").first.to_hash["title"].should == "Some title"
       ActiveSearch.search("junk").first.to_hash["title"].should == "Junk"
     end
+    
+    it "should find docs even with upcase searches" do
+      ActiveSearch.search("FINDABLE").count.should == 4
+    end
 
     it "should remove destroyed documents from index" do
       @findable.destroy
