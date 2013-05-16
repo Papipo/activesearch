@@ -13,7 +13,7 @@ def cleanup(engine)
     Tire::Configuration.client.delete "#{Tire::Configuration.url}/_all"
     load File.join(File.dirname(__FILE__), 'models', 'elastic_search.rb')
   when "Mongoid"
-    Mongoid.master.collections.select { |c| c.name != 'system.indexes' }.each(&:drop)
+    Mongoid.purge!
   end
 end
 

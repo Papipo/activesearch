@@ -1,7 +1,9 @@
 require 'mongoid'
 require 'activesearch/mongoid'
 
-Mongoid.database = Mongo::Connection.new("localhost").db("activesearch_test")
+Mongoid.configure do |config|
+  config.sessions = {:default => {:hosts => ["localhost"], :database => "activesearch_test"}}
+end
 
 class MongoidModel
   include Mongoid::Document

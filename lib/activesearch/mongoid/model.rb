@@ -4,13 +4,13 @@ module ActiveSearch
       include ::Mongoid::Document
       
       field :_original_type, type: String
-      field :_original_id, type: BSON::ObjectId
+      field :_original_id, type: Moped::BSON::ObjectId
       field :_keywords
       field :_stored, type: Hash, default: {}
       alias_method :to_hash, :_stored
       
-      index :_keywords
-      index [:_original_type, :_original_id], unique: true
+      index({_keywords: 1})
+      index({_original_type: 1, _original_id: 1}, unique: true)
       
       def store_fields(original, fields, options)
         if options && options[:store]

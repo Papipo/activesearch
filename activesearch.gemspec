@@ -21,10 +21,10 @@ Gem::Specification.new do |gem|
   
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "rspec-mocks"
-  gem.add_development_dependency "bson_ext"
   gem.add_development_dependency "active_attr"
-  gem.add_development_dependency "mongoid", "~> 2"
+  gem.add_development_dependency "mongoid", "~> 3"
   gem.add_development_dependency "tire"
   gem.add_development_dependency "parallel_tests"
   gem.add_development_dependency "httparty"
+  gem.add_development_dependency "multi_json", "1.7.2" # to avoid annoyinh warning on 1.7.3
 end
