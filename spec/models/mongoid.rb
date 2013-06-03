@@ -14,7 +14,9 @@ class MongoidModel
   field :junk,  type: String
   field :special, type: Boolean, default: false
   field :scope_id, type: Integer
-  search_by [:title, :text, store: [:title, :junk, :scope_id]], unless: :special
+  field :tags, type: Array
+  
+  search_by [:title, :text, :tags, store: [:title, :junk, :scope_id]], unless: :special
 end
 
 class AnotherMongoidModel

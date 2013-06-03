@@ -19,8 +19,9 @@ class ElasticSearchModel < ActiveMimic
   attribute :text
   attribute :junk
   attribute :special, default: false
+  attribute :tags, type: Array
   
-  search_by [:title, :text, store: [:title, :junk]], if: lambda { !self.special }
+  search_by [:title, :text, :tags, store: [:title, :junk]], if: lambda { !self.special }
 
 end
 

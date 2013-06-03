@@ -8,8 +8,9 @@ class AlgoliaModel < ActiveMimic
   attribute :junk
   attribute :special, default: false
   attribute :scope_id, type: Integer
+  attribute :tags, type: Array
   
-  search_by [:title, :text, store: [:title, :junk, :scope_id]], if: lambda { !self.special }
+  search_by [:title, :text, :tags, store: [:title, :junk, :scope_id]], if: lambda { !self.special }
 
 end
 

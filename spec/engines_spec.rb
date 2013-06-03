@@ -33,6 +33,7 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       @junk           = Object.const_get("#{engine}Model").create(title: "Junk", junk: "Not Findable junk", scope_id: 1)
       @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true, scope_id: 1)
       @foreign        = Object.const_get("#{engine}Model").create(title: "Findable", scope_id: 2)
+      @tagged         = Object.const_get("#{engine}Model").create(title: "Tagged document", tags: ['findable'], scope_id: 1)
     end
     
     it "should find the expected documents" do
@@ -49,18 +50,21 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
           {
             "title"  => "Some title"
           },
+          {
+            "title"  => "Tagged document"
+          }
         ]
       ActiveSearch.search("some text").first.to_hash["title"].should == "Some title"
       ActiveSearch.search("junk").first.to_hash["title"].should == "Junk"
     end
     
     it "should find docs even with upcase searches" do
-      ActiveSearch.search("FINDABLE").count.should == 4
+      ActiveSearch.search("FINDABLE").count.should == 5
     end
 
     it "should remove destroyed documents from index" do
       @findable.destroy
-      ActiveSearch.search("findable").count.should == 3
+      ActiveSearch.search("findable").count.should == 4
     end
   end
 end
