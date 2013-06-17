@@ -1,0 +1,6 @@
+test:
+  sessions:
+    default:
+      database: activesearch_test
+      hosts:
+        - localhost:27017

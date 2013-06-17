@@ -3,7 +3,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 require 'mongoid'
 require 'activesearch/mongoid'
 
-Mongoid.database = Mongo::Connection.new("localhost").db("activesearch_test")
+Mongoid.load!("config/mongoid.yml", :test)
 
 class LocalizedMongoidModel
   include Mongoid::Document
@@ -16,7 +16,7 @@ end
 
 describe ActiveSearch::Mongoid do
   before do
-    Mongoid.master.collections.select { |c| c.name != 'system.indexes' }.each(&:drop)
+    Mongoid.purge!
     I18n.locale = :en
     @localized  = LocalizedMongoidModel.create!(title: "<strong>English</strong> English")
     I18n.with_locale(:es) do
