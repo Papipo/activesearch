@@ -34,6 +34,9 @@ module ActiveSearch
     protected
     def reindex
       algolia_client.save(indexable_id, self.to_indexable)
+    rescue
+      self.touch
+      false
     end
     
     def deindex
