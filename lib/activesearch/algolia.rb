@@ -5,8 +5,10 @@ require "activesearch/proxy"
 module ActiveSearch
   def self.search(text, conditions = {})
     Proxy.new(text, conditions) do |text, conditions|
-      
-      Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
+      options = {}
+      tags = conditions_to_tags(conditions)
+      options.merge!(tags: tags) if tags != ""
+      Algolia::Client.new.query(text, options)["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
             k, v = tag.split(':')
