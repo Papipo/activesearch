@@ -31,12 +31,13 @@ module ActiveSearch
           
           if original.fields[f.to_s].localized?
             memo += original.send("#{f}_translations").map do |locale,translation|
+              next if translation.nil?
               translation.downcase.split.map { |word| "#{locale}:#{word}"}
             end.flatten
           else
             if original[f]
               memo += if original[f].is_a?(Array)
-                original[f].map(&:downcase)
+                original[f].map { |value| value.nil? ? nil : value.downcase }
               else
                 original[f].downcase.split
               end

@@ -10,7 +10,9 @@ class LocalizedMongoidModel
   include ActiveSearch::Mongoid
   
   field :title, localize: true
-  search_by [:title, store: [:title]]
+  field :not_localized
+  field :array, type: Array
+  search_by [:title, :not_localized, :array, store: [:title]]
 end
 
 
@@ -34,5 +36,17 @@ describe ActiveSearch::Mongoid do
   
   it "should store localized keywords with tags stripped" do
     ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should == ["en:english", "es:español"]
+  end
+  
+  it "handles empty translations" do
+    lambda { LocalizedMongoidModel.create!(title: nil, not_localized: "example") }.should_not raise_error
+  end
+  
+  it "handles empty fields" do
+    lambda { LocalizedMongoidModel.create!(title: "Example", not_localized: nil) }.should_not raise_error
+  end
+  
+  it "handles nil values in arrays" do
+    lambda { LocalizedMongoidModel.create!(title: "Example", not_localized: "example", array: [nil]) }.should_not raise_error
   end
 end
