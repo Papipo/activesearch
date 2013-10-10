@@ -7,7 +7,7 @@ module ActiveSearch
       include HTTParty
   
       def self.configure(api_key, app_id, index = "activesearch")
-        base_uri "https://apieu1.algolia.com/1/indexes/#{index}"
+        base_uri "https://#{app_id}.algolia.io/1/indexes/#{index}"
         headers({
           "X-Algolia-API-Key" => api_key,
           "X-Algolia-Application-Id" => app_id,
