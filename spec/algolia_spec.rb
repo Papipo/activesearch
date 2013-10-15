@@ -12,11 +12,14 @@ describe ActiveSearch::Algolia do
     ActiveSearch::Algolia::Client.new.delete_index
   end
   
-  context "errors on save" do
+  context "retry on errors" do
     before do
+      times_called = 0
       @instance = AlgoliaModel.new(title: "Example")
-      @instance.should_receive(:touch).once
-      ActiveSearch::Algolia::Client.any_instance.stub(:save).and_raise(Errno::ECONNRESET)
+      ActiveSearch::Algolia::Client.should_receive(:put).exactly(3).times.and_return do
+        times_called += 1
+        raise Errno::ECONNRESET if times_called <= 2
+      end
     end
     
     subject { -> { @instance.save } }

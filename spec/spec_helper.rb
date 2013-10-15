@@ -1,5 +1,10 @@
 require 'active_model'
 require 'active_attr'
+require 'girl_friday'
+
+RSpec.configure do |config|
+  config.before(:all) { GirlFriday::WorkQueue.immediate! }
+end
 
 class ActiveMimic
   extend ActiveModel::Callbacks

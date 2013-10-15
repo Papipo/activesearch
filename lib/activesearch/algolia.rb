@@ -1,6 +1,7 @@
 require "activesearch/algolia/client"
 require "activesearch/base"
 require "activesearch/proxy"
+require "girl_friday/store/mongo"
 
 module ActiveSearch
   def self.search(text, conditions = {})
@@ -27,6 +28,19 @@ module ActiveSearch
   end
   
   module Algolia
+    Queue = ::GirlFriday::WorkQueue.new('activesearch_algolia', store: GirlFriday::Store::Mongo) do |msg|
+      begin
+        case msg[:task]
+        when :reindex
+          ::ActiveSearch::Algolia::Client.new.save(msg[:id], msg[:doc])
+        when :deindex
+          ::ActiveSearch::Algolia::Client.new.delete(msg[:id])
+        end
+      rescue
+        ActiveSearch::Algolia::Queue.push(msg.merge!(retries: msg[:retries].to_i + 1)) unless msg[:retries].to_i >= 3
+      end
+    end
+      
     def self.included(base)
       base.class_eval do
         include Base
@@ -35,14 +49,11 @@ module ActiveSearch
     
     protected
     def reindex
-      algolia_client.save(indexable_id, self.to_indexable)
-    rescue
-      self.touch
-      false
+      Queue.push(task: :reindex, id: indexable_id, doc: self.to_indexable)
     end
     
     def deindex
-      algolia_client.delete(indexable_id)
+      Queue.push(task: :deindex, id: indexable_id)
     end
     
     def to_indexable
@@ -56,10 +67,6 @@ module ActiveSearch
         doc["_tags"] << "#{field}:#{self.send(field)}"
       end
       doc
-    end
-    
-    def algolia_client
-      @algolia_client ||= Client.new
     end
   end
 end
