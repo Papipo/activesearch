@@ -19,9 +19,10 @@ end
 
 Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename(f, '.rb') }.each do |filename|
   engine = filename.split('_').collect { |w| w.capitalize }.join
-  
+  next unless engine == "Algolia"
   describe "ActiveSearch::#{engine}" do
     before(:all) do
+      I18n.locale = :en
       require File.join(File.dirname(__FILE__), 'models', filename)
     end
     
@@ -34,13 +35,18 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
       @special        = Object.const_get("#{engine}Model").create(title: "Not findable because it's special", special: true, scope_id: 1)
       @foreign        = Object.const_get("#{engine}Model").create(title: "Findable", scope_id: 2)
       @tagged         = Object.const_get("#{engine}Model").create(title: "Tagged document", tags: ['findable'], scope_id: 1)
+      @localized      = Object.const_get("#{engine}Model").create(title: "Localized", color: "Red")
+      I18n.with_locale :es do
+        @localized.color = "Rojo"
+        @localized.save
+      end
     end
     
     it "should find the expected documents" do
       results = ActiveSearch.search("findable", scope_id: 1).map { |doc| doc.select { |k,v| %w[title junk virtual].include?(k.to_s) } }
       results.sort_by { |result| result["title"] }.should == [
           {
-            "title"   => "Another <strong>findable</strong> title with tags",
+            "title"   => "Another findable title with tags",
             "virtual" =>  "virtual"
           },
           {
@@ -54,8 +60,15 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
             "title"  => "Tagged document"
           }
         ]
-      ActiveSearch.search("some text").first.to_hash["title"].should == "Some title"
-      ActiveSearch.search("junk").first.to_hash["title"].should == "Junk"
+      ActiveSearch.search("some text").first["title"].should == "Some title"
+      ActiveSearch.search("junk").first["title"].should == "Junk"
+    end
+    
+    it "should handle localized fields" do
+      ActiveSearch.search("Localized").first["color"].should == "Red"
+      I18n.with_locale :es do
+        ActiveSearch.search("Localized").first["color"].should == "Rojo"
+      end
     end
     
     it "should find docs even with upcase searches" do
@@ -65,6 +78,13 @@ Dir[File.join(File.dirname(__FILE__), 'models', '*.rb')].map { |f| File.basename
     it "should remove destroyed documents from index" do
       @findable.destroy
       ActiveSearch.search("findable").count.should == 4
+    end
+    
+    it "should excerpt and highlight" do
+      Object.const_get("#{engine}Model").create(title: <<-LIPSUM, junk: "Junk field", scope_id: 1)
+        Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy findable text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+      LIPSUM
+      ActiveSearch.search("dummy findable").first["highlighted"]["title"].should == "Lorem Ipsum is simply <em>dummy</em> text of the printing and typesetting industry. Lo..."
     end
   end
 end

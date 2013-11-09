@@ -29,7 +29,7 @@ class ActiveMimic
   end
   
   def save
-    self.id = self.class.next_id
+    self.id ||= self.class.next_id 
     run_callbacks :save do
       true
     end
@@ -44,5 +44,18 @@ class ActiveMimic
   def self.next_id
     @next_id ||= 0
     @next_id += 1
+  end
+  
+  def self.localized_attribute(name)
+    attribute "#{name}_translations", type: Hash
+    
+    define_method name do
+      send("#{name}_translations") && send("#{name}_translations")[I18n.locale.to_s]
+    end
+    
+    define_method "#{name}=" do |value|
+      send("#{name}_translations=", {}) if send("#{name}_translations").nil?
+      send("#{name}_translations").merge!(I18n.locale.to_s => value)
+    end
   end
 end

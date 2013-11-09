@@ -11,7 +11,7 @@ module ActiveSearch
     end
     
     def each(&block)
-      @implementation.call(@text, @conditions).each { |result| block.call(Result.new(result)) }
+      @implementation.call(@text, @conditions).each { |result| block.call(Result.new(result, @text)) }
     end
   end
 end

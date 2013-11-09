@@ -6,7 +6,9 @@ module ActiveSearch
     when String
       value.gsub(/<\/?[^>]*>/, '')
     when Hash
-      value.each { |k,v| value[k] = strip_tags(value[k]) }
+      value.each_with_object({}) { |(k,v),h| h[k] = strip_tags(v) }
+    else
+      value
     end
   end
   

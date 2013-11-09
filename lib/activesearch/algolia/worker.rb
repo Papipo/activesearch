@@ -9,7 +9,10 @@ class ActiveSearch::Algolia::Worker
       when :reindex
         ::ActiveSearch::Algolia::Client.new.save(msg[:id], msg[:doc])
       when :deindex
-        ::ActiveSearch::Algolia::Client.new.delete(msg[:id])
+        client = ::ActiveSearch::Algolia::Client.new
+        client.query("", tags: "original_id:#{msg[:id]}")["hits"].each do |hit|
+          client.delete(hit["objectID"])
+        end
       end
     rescue Exception => e
       perform(msg.merge!(retries: msg[:retries].to_i + 1)) unless msg[:retries].to_i >= 3

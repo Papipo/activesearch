@@ -31,6 +31,10 @@ module ActiveSearch
       def query(text, extras = {})
         self.class.get("", query: extras.merge!(query: text))
       end
+      
+      def get(id)
+        self.class.get("/#{id}")
+      end
     end
   end
 end

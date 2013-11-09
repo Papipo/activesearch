@@ -9,8 +9,9 @@ class AlgoliaModel < ActiveMimic
   attribute :special, default: false
   attribute :scope_id, type: Integer
   attribute :tags, type: Array
+  localized_attribute :color
   
-  search_by [:title, :text, :tags, store: [:title, :junk, :scope_id]], if: lambda { !self.special }
+  search_by [:title, :text, :tags, :color, store: [:title, :junk, :scope_id]], if: lambda { !self.special }
 
 end
 
@@ -19,7 +20,8 @@ class AnotherAlgoliaModel < ActiveMimic
   
   attribute :title, type: String
   attribute :scope_id, type: Integer
-  search_by [:title, store: [:title, :virtual, :scope_id]]
+  localized_attribute :color
+  search_by [:title, store: [:title, :virtual, :scope_id, :color]]
   
   def virtual
     "virtual"

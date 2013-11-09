@@ -6,10 +6,7 @@ require "activesearch/proxy"
 module ActiveSearch
   def self.search(text, conditions = {})
     Proxy.new(text, conditions) do |text, conditions|
-      options = {}
-      tags = conditions_to_tags(conditions)
-      options.merge!(tags: tags) if tags != ""
-      Algolia::Client.new.query(text, options)["hits"].map! do |hit|
+      Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
             k, v = tag.split(':')
@@ -24,10 +21,10 @@ module ActiveSearch
   
   protected
   def self.conditions_to_tags(conditions)
-    conditions.map { |c| c.join(':') }.join(',')
+    conditions.merge(locale: I18n.locale).map { |c| c.join(':') }.join(',')
   end
   
-  module Algolia      
+  module Algolia
     def self.included(base)
       base.class_eval do
         include Base
@@ -36,7 +33,7 @@ module ActiveSearch
     
     protected
     def reindex
-      Worker.new.async.perform(task: :reindex, id: indexable_id, doc: self.to_indexable)
+      Worker.new.async.perform(task: :reindex, id: "#{indexable_id}_#{I18n.locale}", doc: to_indexable)
     end
     
     def deindex
@@ -46,13 +43,21 @@ module ActiveSearch
     def to_indexable
       doc = {}
       search_fields.each do |field|
-        doc[field.to_s] = attributes[field.to_s] if attributes[field.to_s]
+        if send(field)
+          doc[field.to_s] = if send(field).is_a?(Hash) && send(field).has_key?(I18n.locale.to_s)
+            ActiveSearch.strip_tags(send(field)[I18n.locale.to_s])
+          else
+            ActiveSearch.strip_tags(send(field))
+          end
+        end
       end
       
       (Array(search_options[:store]) - search_fields).each do |field|
         doc["_tags"] ||= []
         doc["_tags"] << "#{field}:#{self.send(field)}"
       end
+      doc["_tags"] << "locale:#{I18n.locale}"
+      doc["_tags"] << "original_id:#{indexable_id}"
       doc
     end
   end
