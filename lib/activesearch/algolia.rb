@@ -4,8 +4,8 @@ require "activesearch/base"
 require "activesearch/proxy"
 
 module ActiveSearch
-  def self.search(text, conditions = {})
-    Proxy.new(text, conditions) do |text, conditions|
+  def self.search(text, conditions = {}, options = {})
+    Proxy.new(text, conditions, options) do |text, conditions|
       Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
@@ -18,28 +18,28 @@ module ActiveSearch
       end
     end
   end
-  
+
   protected
   def self.conditions_to_tags(conditions)
     conditions.merge(locale: I18n.locale).map { |c| c.join(':') }.join(',')
   end
-  
+
   module Algolia
     def self.included(base)
       base.class_eval do
         include Base
       end
     end
-    
+
     protected
     def reindex
       Worker.new.async.perform(task: :reindex, id: "#{indexable_id}_#{I18n.locale}", doc: to_indexable)
     end
-    
+
     def deindex
       Worker.new.async.perform(task: :deindex, id: indexable_id)
     end
-    
+
     def to_indexable
       doc = {}
       search_fields.each do |field|
@@ -51,7 +51,7 @@ module ActiveSearch
           end
         end
       end
-      
+
       (Array(search_options[:store]) - search_fields).each do |field|
         doc["_tags"] ||= []
         doc["_tags"] << "#{field}:#{self.send(field)}"
