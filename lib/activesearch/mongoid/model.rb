@@ -27,27 +27,6 @@ module ActiveSearch
       end
       
       def refresh_keywords(original, fields)
-        # self._keywords = fields.select { |f| original.respond_to? f }.inject([]) do |memo,f|
-        #   
-        #   if original.fields[f.to_s].localized?
-        #     memo += original.send("#{f}_translations").map do |locale,translation|
-        #       next if translation.nil?
-        #       translation.downcase.split.map { |word| "#{locale}:#{word}"}
-        #     end.flatten
-        #   else
-        #     if original[f]
-        #       memo += if original[f].is_a?(Array)
-        #         original[f].map { |value| value.nil? ? nil : value.downcase }
-        #       else
-        #         original[f].downcase.split
-        #       end
-        #       
-        #     else
-        #       memo
-        #     end
-        #   end
-        # end
-
         self._keywords = fields.map do |f|
           
           if original.fields[f.to_s] && original.fields[f.to_s].localized?
