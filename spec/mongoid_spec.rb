@@ -12,7 +12,10 @@ class LocalizedMongoidModel
   field :title, localize: true
   field :not_localized
   field :array, type: Array
-  search_by [:title, :not_localized, :array, store: [:title]]
+  def virtual
+    "virtual #{not_localized}"
+  end
+  search_by [:title, :not_localized, :virtual, :array, store: [:title]]
 end
 
 
@@ -20,7 +23,10 @@ describe ActiveSearch::Mongoid do
   before do
     Mongoid.purge!
     I18n.locale = :en
-    @localized  = LocalizedMongoidModel.create!(title: "<strong>English</strong> English")
+    @localized  = LocalizedMongoidModel.create!(
+      title: "<strong>English</strong> English",
+      not_localized: "some data"
+    )
     I18n.with_locale(:es) do
       @localized.title = "Español Español"
       @localized.save!
@@ -34,8 +40,25 @@ describe ActiveSearch::Mongoid do
     end
   end
   
+  it "adds all searchable attributes into highlighted hash" do
+    found = ActiveSearch.search("english").first
+    found['highlighted'].should have_key('title')
+    found['highlighted'].should have_key('virtual') 
+  end
+  
+  # Implementation mutates state, is there some reason for this behavior?
+  it "actually behaves strange now" do
+    search = ActiveSearch.search("english")
+    search.first["title"].should == "<strong>English</strong> English"
+    search.first["title"].should == "<strong>English</strong> English"    
+  end
+  
   it "should store localized keywords with tags stripped" do
-    ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should == ["en:english", "es:español"]
+    ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should include("en:english", "es:español")
+  end
+  
+  it "should store virtual fields" do
+    ActiveSearch::Mongoid::Model.where(_original_type: "LocalizedMongoidModel", _original_id: @localized.id).first._keywords.should include("virtual")
   end
   
   it "handles empty translations" do

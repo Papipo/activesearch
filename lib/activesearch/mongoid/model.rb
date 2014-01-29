@@ -27,28 +27,25 @@ module ActiveSearch
       end
       
       def refresh_keywords(original, fields)
-        self._keywords = fields.select { |f| original.fields[f.to_s] }.inject([]) do |memo,f|
+        self._keywords = []
+
+        fields.each do |f|
           
-          if original.fields[f.to_s].localized?
-            memo += original.send("#{f}_translations").map do |locale,translation|
-              next if translation.nil?
-              translation.downcase.split.map { |word| "#{locale}:#{word}"}
-            end.flatten
-          else
-            if original[f]
-              memo += if original[f].is_a?(Array)
-                original[f].map { |value| value.nil? ? nil : value.downcase }
-              else
-                original[f].downcase.split
+          if original.fields[f.to_s] && original.fields[f.to_s].localized?
+            original.send("#{f}_translations").reject { |l, t| t.nil? }.map do |locale, translation|
+              translation.downcase.split.each do |word|  
+                self._keywords << "#{locale}:#{word}"
               end
-              
-            else
-              memo
             end
+          else
+            [original.try(f)].flatten.compact.map(&:downcase).map(&:split).flatten.each do |word|
+              self._keywords << word
+            end 
           end
+          
         end
-        
-        self._keywords = self._keywords.map! { |k| ActiveSearch.strip_tags(k) }
+
+        self._keywords.map! { |k| ActiveSearch.strip_tags(k) }
         self._keywords.uniq!
       end
       
