@@ -4,7 +4,11 @@ require "activesearch/base"
 require "activesearch/proxy"
 
 module ActiveSearch
+
   def self.search(text, conditions = {}, options = {})
+    locale = options[:locale] || I18n.locale
+    conditions[:locale] ||= locale
+
     Proxy.new(text, conditions, options) do |text, conditions|
       Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
         if hit["_tags"]
@@ -20,8 +24,9 @@ module ActiveSearch
   end
 
   protected
+
   def self.conditions_to_tags(conditions)
-    conditions.merge(locale: I18n.locale).map { |c| c.join(':') }.join(',')
+    conditions.map { |c| c.join(':') }.join(',')
   end
 
   module Algolia
@@ -33,32 +38,35 @@ module ActiveSearch
 
     protected
     def reindex
-      Worker.new.async.perform(task: :reindex, id: "#{indexable_id}_#{I18n.locale}", doc: to_indexable)
+      Worker.new.async.perform(task: :reindex, id: "#{indexable_id}_#{search_locale}", doc: to_indexable)
     end
 
     def deindex
-      Worker.new.async.perform(task: :deindex, id: indexable_id)
+      Worker.new.async.perform(task: :deindex, id: self.id, type: self.class.to_s)
     end
 
     def to_indexable
-      doc = {}
-      search_fields.each do |field|
-        if send(field)
-          doc[field.to_s] = if send(field).is_a?(Hash) && send(field).has_key?(I18n.locale.to_s)
-            ActiveSearch.strip_tags(send(field)[I18n.locale.to_s])
-          else
-            ActiveSearch.strip_tags(send(field))
+      {}.tap do |doc|
+        _locale = search_locale
+
+        search_fields.each do |field|
+          if content = send(field)
+            doc[field.to_s] = if content.is_a?(Hash) && content.has_key?(_locale)
+              ActiveSearch.strip_tags(content[_locale])
+            else
+              ActiveSearch.strip_tags(content)
+            end
           end
         end
-      end
 
-      (Array(search_options[:store]) - search_fields).each do |field|
-        doc["_tags"] ||= []
-        doc["_tags"] << "#{field}:#{self.send(field)}"
+        (Array(search_options[:store]) - search_fields).each do |field|
+          doc["_tags"] ||= []
+          doc["_tags"] << "#{field}:#{self.send(field)}"
+        end
+        doc["_tags"] << "locale:#{_locale}"
+        doc["_tags"] << "original_type:#{self.class.to_s}"
+        doc["_tags"] << "original_id:#{self.id}"
       end
-      doc["_tags"] << "locale:#{I18n.locale}"
-      doc["_tags"] << "original_id:#{indexable_id}"
-      doc
     end
   end
 end

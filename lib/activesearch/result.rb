@@ -9,10 +9,12 @@ module ActiveSearch
     include ActionView::Helpers::TextHelper
 
     def initialize(result, text, options = {})
+      locale = (options[:locale] || I18n.locale).to_s
+
       @text = text
       result.to_hash.each do |k,v|
-        unless v.nil? || k.to_s.start_with?('_')
-          self[k.to_s] = v.respond_to?(:has_key?) && v.has_key?(I18n.locale.to_s) ? v[I18n.locale.to_s] : v
+        unless v.nil?
+          self[k.to_s] = v.respond_to?(:has_key?) && v.has_key?(locale) ? v[locale] : v
         end
       end
 

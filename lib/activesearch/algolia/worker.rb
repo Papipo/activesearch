@@ -2,7 +2,7 @@ require "sucker_punch"
 
 class ActiveSearch::Algolia::Worker
   include SuckerPunch::Job
-  
+
   def perform(msg)
     begin
       case msg[:task]
@@ -10,7 +10,7 @@ class ActiveSearch::Algolia::Worker
         ::ActiveSearch::Algolia::Client.new.save(msg[:id], msg[:doc])
       when :deindex
         client = ::ActiveSearch::Algolia::Client.new
-        client.query("", tags: "original_id:#{msg[:id]}")["hits"].each do |hit|
+        client.query("", tags: "original_type:#{msg[:type]},original_id:#{msg[:id]}")["hits"].each do |hit|
           client.delete(hit["objectID"])
         end
       end

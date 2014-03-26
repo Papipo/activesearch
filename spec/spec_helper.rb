@@ -1,61 +1,51 @@
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+Bundler.require
+
+require 'rspec'
+
+require 'activesearch/base'
 require 'active_model'
 require 'active_attr'
 require 'sucker_punch'
 require 'sucker_punch/testing/inline'
 
-class ActiveMimic
-  extend ActiveModel::Callbacks
-  extend ActiveModel::Naming
-  include ActiveModel::Serialization
-  include ActiveAttr::Attributes
-  include ActiveAttr::MassAssignment
-  
-  attribute :id
-  attribute :type
-  
-  define_model_callbacks :save
-  define_model_callbacks :destroy
-  
-  def self.create(attrs)
-    new(attrs).tap(&:save)
+# Requires supporting ruby files with custom matchers and macros, etc,
+# in spec/support/ and its subdirectories.
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each { |f| require f }
+
+RSpec.configure do |config|
+
+  require 'database_cleaner'
+  require 'database_cleaner/mongoid/truncation'
+
+  config.backtrace_clean_patterns = [
+    /\/lib\d*\/ruby\//,
+    /bin\//,
+    /gems/,
+    /spec\/spec_helper\.rb/,
+    /lib\/rspec\/(core|expectations|matchers|mocks)/
+  ]
+
+  config.before(:suite) do
+    DatabaseCleaner['mongoid'].strategy = :truncation
   end
-  
-  def indexable_id
-    "#{self.class.to_s}_#{self.id}"
+
+  config.before(:each) do
+    DatabaseCleaner.start
   end
-  
-  def type
-    self.class.to_s
-  end
-  
-  def save
-    self.id ||= self.class.next_id 
-    run_callbacks :save do
-      true
-    end
-  end
-  
-  def destroy
-    run_callbacks :destroy do
-      true
-    end
-  end
-  
-  def self.next_id
-    @next_id ||= 0
-    @next_id += 1
-  end
-  
-  def self.localized_attribute(name)
-    attribute "#{name}_translations", type: Hash
-    
-    define_method name do
-      send("#{name}_translations") && send("#{name}_translations")[I18n.locale.to_s]
-    end
-    
-    define_method "#{name}=" do |value|
-      send("#{name}_translations=", {}) if send("#{name}_translations").nil?
-      send("#{name}_translations").merge!(I18n.locale.to_s => value)
-    end
+
+  config.after(:each) do
+    # ElasticSearch engine
+    # Tire::Configuration.client.delete "#{Tire::Configuration.url}/_all"
+
+    # Algolia engine
+    # ActiveSearch::Algolia::Client.new.delete_index
+
+    # Mongoid engine
+    # DatabaseCleaner.clean
+
+    ::I18n.locale = 'en'
   end
 end
