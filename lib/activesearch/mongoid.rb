@@ -5,14 +5,6 @@ require 'activesearch/mongoid/index'
 module ActiveSearch
 
   def self.search(text, conditions = {}, options = {})
-    # TODO: locale as an option (use I18n.locale by default)
-    # Proxy.new(text, conditions, options) do |text, conditions|
-    #   text = text.downcase.split(/\s+/)
-    #   conditions.keys.each { |k| conditions["_stored.#{k}"] = conditions.delete(k) }
-    #   conditions.merge!(:_keywords.in => text + text.map { |word| "#{I18n.locale}:#{word}"})
-    #   Mongoid::Model.where(conditions)
-    # end
-
     locale = options[:locale] || I18n.locale
     conditions[:locale] ||= locale
 

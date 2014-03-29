@@ -13,8 +13,12 @@ module ActiveSearch
       Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
-            k, v = tag.split(':')
-            hit[k] = v
+            # preserve other ":" characters
+            _segments = tag.split(':')
+
+            unless _segments.empty? || _segments[1..-1].empty?
+              hit[_segments.first] = _segments[1..-1].join(':')
+            end
           end
           hit.delete("_tags")
         end

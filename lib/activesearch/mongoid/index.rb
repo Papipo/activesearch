@@ -48,7 +48,7 @@ module ActiveSearch
         filter = {}
         conditions.each do |key, value|
           if key == :locale
-            filter['locale'] = value
+            filter['locale'] = value.to_s
           else
             filter["stored.#{key}"] = value
           end

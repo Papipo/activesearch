@@ -1,5 +1,6 @@
 require 'action_view'
 require 'active_support/core_ext'
+require 'active_support/core_ext/hash/slice'
 
 module ActiveSearch
   class Result < Hash
@@ -19,6 +20,10 @@ module ActiveSearch
       end
 
       self.build_highlighted_fields(options[:radius])
+    end
+
+    def slice(*keys)
+      ::Hash.new.update(self).slice(*keys)
     end
 
     protected
