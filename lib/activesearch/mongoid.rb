@@ -21,7 +21,7 @@ module ActiveSearch
       end
     end
 
-    def to_indexable
+    def to_indexable(depth = 0)
       {}.tap do |doc|
         _locale = search_locale
 
@@ -30,7 +30,7 @@ module ActiveSearch
             doc[field.to_s] = if content.is_a?(Hash) && content.has_key?(_locale)
               ActiveSearch.strip_tags(content[_locale])
             elsif content && content.respond_to?(:to_indexable)
-              ActiveSearch.strip_tags(content.to_indexable.to_s)
+              ActiveSearch.strip_tags(content.to_indexable(depth + 1))
             else
               ActiveSearch.strip_tags(content)
             end
