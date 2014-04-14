@@ -27,7 +27,7 @@ class AnotherMongoidModel
   end
 
   def virtual
-    "virtual"
+    Struct.new(:to_indexable).new('virtual')
   end
 end
 

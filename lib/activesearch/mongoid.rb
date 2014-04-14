@@ -1,5 +1,6 @@
 require 'activesearch/base'
 require 'activesearch/proxy'
+require 'activesearch/mongoid/full_text_search_query'
 require 'activesearch/mongoid/index'
 
 module ActiveSearch
@@ -9,7 +10,7 @@ module ActiveSearch
     conditions[:locale] ||= locale
 
     Proxy.new(text, conditions, options) do |text, conditions|
-      ActiveSearch::Mongoid::Index.search(text, conditions)
+      ActiveSearch::Mongoid::Index.search(text, conditions, options)
     end
   end
 
@@ -28,6 +29,8 @@ module ActiveSearch
           if content = send(field)
             doc[field.to_s] = if content.is_a?(Hash) && content.has_key?(_locale)
               ActiveSearch.strip_tags(content[_locale])
+            elsif content && content.respond_to?(:to_indexable)
+              ActiveSearch.strip_tags(content.to_indexable.to_s)
             else
               ActiveSearch.strip_tags(content)
             end

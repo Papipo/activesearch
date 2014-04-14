@@ -5,7 +5,7 @@ module ActiveSearch
   module Algolia
     class Client
       include HTTParty
-  
+
       def self.configure(api_key, app_id, index = "activesearch")
         base_uri "https://#{app_id}.algolia.io/1/indexes/#{index}"
         headers({
@@ -28,10 +28,16 @@ module ActiveSearch
         self.class.put("/#{id}", body: object.to_json)
       end
 
-      def query(text, extras = {})
-        self.class.get("", query: extras.merge!(query: text))
+      def query(text, extras = {}, options = {})
+        page, per_page = options[:page] || 0, options[:per_page] || 20
+
+        self.class.get('', query: extras.merge!(
+          query:        text,
+          page:         page,
+          hitsPerPage:  per_page
+        ))
       end
-      
+
       def get(id)
         self.class.get("/#{id}")
       end

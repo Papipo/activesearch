@@ -10,7 +10,7 @@ module ActiveSearch
     conditions[:locale] ||= locale
 
     Proxy.new(text, conditions, options) do |text, conditions|
-      Algolia::Client.new.query(text, tags: conditions_to_tags(conditions))["hits"].map! do |hit|
+      Algolia::Client.new.query(text, { tags: conditions_to_tags(conditions) }, options)["hits"].map! do |hit|
         if hit["_tags"]
           hit["_tags"].each do |tag|
             # preserve other ":" characters
@@ -57,6 +57,8 @@ module ActiveSearch
           if content = send(field)
             doc[field.to_s] = if content.is_a?(Hash) && content.has_key?(_locale)
               ActiveSearch.strip_tags(content[_locale])
+            elsif content && content.respond_to?(:to_indexable)
+              ActiveSearch.strip_tags(content.to_indexable)
             else
               ActiveSearch.strip_tags(content)
             end

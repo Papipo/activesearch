@@ -57,7 +57,20 @@ shared_examples 'an engine' do
     @model.create(title: <<-LIPSUM, junk: "Junk field", scope_id: 1)
       Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy findable text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
     LIPSUM
-    ActiveSearch.search("dummy findable").first["highlighted"]["title"].should == "Lorem Ipsum is simply <em>dummy</em> text of the printing and typesetting industry. Lo..."
+    entry = ActiveSearch.search("dummy findable").first
+    entry["highlighted"]["title"].should == "Lorem Ipsum is simply <em>dummy</em> text of the printing and typesetting industry. Lo..."
+  end
+
+  it "should paginate docs" do
+    page = ActiveSearch.search("findable", {}, { page: 0, per_page: 2 })
+    first_page_titles = page.map { |e| e['title'] }
+    page.count.should == 2
+
+    page = ActiveSearch.search("findable", {}, { page: 1, per_page: 2 })
+    second_page_titles = page.map { |e| e['title'] }
+    page.count.should == 2
+
+    first_page_titles.should_not == second_page_titles
   end
 
 end

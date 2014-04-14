@@ -41,6 +41,11 @@ module SetupEngine
 
     ActiveSearch::Mongoid::Index.create_indexes
 
+    if ENV['MONGOID_LOGS'].present?
+      Moped.logger = Logger.new($stdout)
+      Moped.logger.level = Logger::DEBUG
+    end
+
     DatabaseCleaner.clean
   end
 

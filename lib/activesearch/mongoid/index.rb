@@ -21,7 +21,7 @@ module ActiveSearch
 
       def store_language(original)
         self.locale   = original.search_locale
-        self.language = self.class.locale_to_language(self.locale)
+        self.language = FullTextSearchQuery.locale_to_language(self.locale)
       end
 
       def store_fields(original)
@@ -30,8 +30,11 @@ module ActiveSearch
         fields = (original.search_fields + (original.search_options[:store] || [])).uniq
 
         fields.each do |f|
-          if original.send(f).present?
-            self.stored[f] = ActiveSearch.strip_tags(original.send(f))
+          content = original.send(f)
+
+          if content.present?
+            content = content.to_indexable if content.respond_to?(:to_indexable)
+            self.stored[f] = ActiveSearch.strip_tags(content)
           end
         end
       end
@@ -42,32 +45,9 @@ module ActiveSearch
 
       ## class methods ##
 
-      def self.search(query, conditions = {})
-        language = self.locale_to_language(conditions[:locale] || I18n.locale)
-
-        filter = {}
-        conditions.each do |key, value|
-          if key == :locale
-            filter['locale'] = value.to_s
-          else
-            filter["stored.#{key}"] = value
-          end
-        end
-
-        session = ::Mongoid.session('default')
-        results = session.command({
-          'text'      => collection.name,
-          'search'    => query,
-          'language'  => language,
-          'filter'    => filter
-        })
-        if results.has_key?('results')
-          results['results'].map do |result|
-            result['obj']['stored'].merge(result['obj'].slice('locale', 'original_type', 'original_id'))
-          end
-        else
-          []
-        end
+      def self.search(query, conditions = {}, options = {})
+        query = FullTextSearchQuery.new(collection.name, query, conditions, options)
+        query.run
       end
 
       def self.deindex(original)
@@ -90,26 +70,6 @@ module ActiveSearch
         doc.save
       end
 
-      def self.locale_to_language(locale)
-        {
-          dk: 'danish',
-          nl: 'dutch',
-          en: 'english',
-          fi: 'finnish',
-          fr: 'french',
-          de: 'german',
-          hu: 'hungarian',
-          it: 'italian',
-          nb: 'norwegian',
-          br: 'portuguese',
-          pt: 'portuguese',
-          ro: 'romanian',
-          ru: 'russian',
-          es: 'spanish',
-          se: 'swedish',
-          tr: 'turkish'
-        }[locale.to_sym] || 'english'
-      end
     end
   end
 end
