@@ -64,6 +64,8 @@ shared_examples 'an engine' do
   it "should paginate docs" do
     page = ActiveSearch.search("findable", {}, { page: 0, per_page: 2 })
     first_page_titles = page.map { |e| e['title'] }
+    page.total_entries.should == 5
+    page.total_pages.should == 2
     page.count.should == 2
 
     page = ActiveSearch.search("findable", {}, { page: 1, per_page: 2 })

@@ -28,19 +28,31 @@ module ActiveSearch
         self.class.put("/#{id}", body: object.to_json)
       end
 
-      def query(text, extras = {}, options = {})
+      def query_text(text, extras = {}, options = {})
         page, per_page = options[:page] || 0, options[:per_page] || 20
 
-        self.class.get('', query: extras.merge!(
+        response = self.class.get('', query: extras.merge!(
           query:        text,
           page:         page,
           hitsPerPage:  per_page
         ))
+
+        ResultsSet.new(response, page, per_page)
       end
 
       def get(id)
         self.class.get("/#{id}")
       end
+
+      def find_from_resource(type, id, &block)
+        query = {
+          tags:   "original_type:#{type},original_id:#{id}",
+          query:  ''
+        }
+
+        self.class.get('', query: query)['hits'].each(&block)
+      end
+
     end
   end
 end

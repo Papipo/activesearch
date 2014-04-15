@@ -4,17 +4,22 @@ module ActiveSearch
   class Proxy
     include Enumerable
 
-    def initialize(text, conditions, options = {}, &implementation)
+    extend Forwardable
+
+    def_delegators :@results_set, :total_pages, :total_entries, :per_page, :page
+
+    def initialize(results_set, text, options)
+      @results_set    = results_set
       @text           = text
-      @conditions     = conditions
       @options        = options
-      @implementation = implementation
     end
 
     def each(&block)
-      @implementation.call(@text, @conditions).each do |result|
-        block.call(Result.new(result, @text, @options))
+      @results_set.results.map do |result|
+        _result = @results_set.parse(result)
+        block.call(Result.new(_result, @text, @options))
       end
     end
+
   end
 end

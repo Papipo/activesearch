@@ -2,8 +2,6 @@ module ActiveSearch
   module Mongoid
     class FullTextSearchQuery
 
-      attr_reader :results
-
       def initialize(name, query, conditions, options)
         @name     = name
         @query    = query
@@ -13,18 +11,14 @@ module ActiveSearch
       end
 
       def run
-        @results = session.command({
+        results = session.command({
           'text'      => @name,
           'search'    => @query,
           'language'  => @language,
           'filter'    => @filter
         })
 
-        if @results.has_key?('results')
-          sanitize_results
-        else
-          []
-        end
+        ResultsSet.new(results, @options[:page], @options[:per_page])
       end
 
       def session
@@ -64,21 +58,6 @@ module ActiveSearch
             end
           end
         end
-      end
-
-      def sanitize_results
-        page, per_page = @options[:page] || 0, @options[:per_page] || 10
-        included  = ((page * per_page)..((page + 1) * per_page - 1))
-        _results  = []
-
-        # manual pagination since it is not natively supported by MongoDB
-        @results['results'].each_with_index do |result, index|
-          if included === index
-            _results << result['obj']['stored'].merge(result['obj'].slice('locale', 'original_type', 'original_id'))
-          end
-        end
-
-        @results = _results
       end
 
     end

@@ -15,20 +15,22 @@ What lies below is for mongoid 3.x.
 
     gem 'mongoid'
     gem 'activesearch'
-    
+
 This is not a fulltext search engine, but it's a good solution for those users that don't have access to anything else.
 It works by storing keywords taken from the specified fields and storing them in an Array field, which would be indexed.
-    
+
 ###elasticsearch
 
     gem 'tire'
     gem 'activesearch'
-    
+
+**Important**: the elasticsearch engine has not not been updated so it does not work.
+
 ###Algolia
 
     gem 'httparty'
     gem 'activesearch'
-    
+
 Then you need to configure the client. In rails, put this in an algolia.rb initializer:
 
     Algolia.configure do |c|
@@ -40,7 +42,7 @@ Then you need to configure the client. In rails, put this in an algolia.rb initi
 ##Configuration
 
 call "search_by" from your model:
-      
+
     search_by [:title, :body, store: [:slug]], if: :its_friday
 
 **IMPORTANT: the first parameter must be either an array, or a symbol.
@@ -51,7 +53,7 @@ You can also add :if or :unless conditions in the same way you would do with Act
 If you need virtual options, pass a symbol instead:
 
     search_by :options_for_search
-    
+
 And define an instance method with that name which must return an array with the options, ie:
 
     def options_for_search
@@ -59,9 +61,9 @@ And define an instance method with that name which must return an array with the
     end
 
 ## Querying
-  
+
     ActiveSearch.search("some words").first.to_hash["title"]
-  
+
 You can access the stored fields with to_hash, so you don't need to fetch the real document.
 
 ## Why?

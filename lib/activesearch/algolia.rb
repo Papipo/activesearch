@@ -1,7 +1,10 @@
-require "activesearch/algolia/client"
-require "activesearch/algolia/worker"
-require "activesearch/base"
-require "activesearch/proxy"
+require 'activesearch/base'
+require 'activesearch/results_set'
+require 'activesearch/proxy'
+
+require 'activesearch/algolia/client'
+require 'activesearch/algolia/results_set'
+require 'activesearch/algolia/worker'
 
 module ActiveSearch
 
@@ -9,22 +12,9 @@ module ActiveSearch
     locale = options[:locale] || I18n.locale
     conditions[:locale] ||= locale
 
-    Proxy.new(text, conditions, options) do |text, conditions|
-      Algolia::Client.new.query(text, { tags: conditions_to_tags(conditions) }, options)["hits"].map! do |hit|
-        if hit["_tags"]
-          hit["_tags"].each do |tag|
-            # preserve other ":" characters
-            _segments = tag.split(':')
+    results_set = Algolia::Client.new.query_text(text, { tags: conditions_to_tags(conditions) }, options)
 
-            unless _segments.empty? || _segments[1..-1].empty?
-              hit[_segments.first] = _segments[1..-1].join(':')
-            end
-          end
-          hit.delete("_tags")
-        end
-        hit
-      end
-    end
+    Proxy.new(results_set, text, options)
   end
 
   protected

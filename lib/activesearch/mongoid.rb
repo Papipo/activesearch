@@ -1,5 +1,8 @@
 require 'activesearch/base'
+require 'activesearch/results_set'
 require 'activesearch/proxy'
+
+require 'activesearch/mongoid/results_set'
 require 'activesearch/mongoid/full_text_search_query'
 require 'activesearch/mongoid/index'
 
@@ -9,9 +12,9 @@ module ActiveSearch
     locale = options[:locale] || I18n.locale
     conditions[:locale] ||= locale
 
-    Proxy.new(text, conditions, options) do |text, conditions|
-      ActiveSearch::Mongoid::Index.search(text, conditions, options)
-    end
+    results_set = ActiveSearch::Mongoid::Index.search(text, conditions, options)
+
+    Proxy.new(results_set, text, options)
   end
 
   module Mongoid
