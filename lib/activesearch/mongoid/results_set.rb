@@ -6,7 +6,7 @@ module ActiveSearch
         super
 
         @results          = results.has_key?('results') ? results['results'] : []
-        @total_entries    = results.size
+        @total_entries    = @results.size
         @total_pages      = @total_entries / @per_page
 
         self.paginate if @total_entries > 0
