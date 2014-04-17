@@ -63,7 +63,7 @@ module ActiveSearch
         doc = find_or_initialize_by(original_type: original.class.to_s, original_id: original.id, locale: locale)
 
         doc.store_language(original)
-        doc.store_fields(original) #, fields, options)
+        doc.store_fields(original)
         doc.refresh_content(original)
 
         # save it (create or update it)

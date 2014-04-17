@@ -51,8 +51,8 @@ module ActiveSearch
       def prepare_filter(conditions)
         {}.tap do |filter|
           conditions.each do |key, value|
-            if key == :locale
-              filter['locale'] = value.to_s
+            if key.to_sym == :locale
+              filter['locale'] = value.to_s unless value == false
             else
               filter["stored.#{key}"] = value
             end

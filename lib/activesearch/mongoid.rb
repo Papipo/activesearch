@@ -9,12 +9,23 @@ require 'activesearch/mongoid/index'
 module ActiveSearch
 
   def self.search(text, conditions = {}, options = {})
-    locale = options[:locale] || I18n.locale
-    conditions[:locale] ||= locale
+    conditions.symbolize_keys!
+    options.symbolize_keys!
+
+    clean_locale(conditions, options)
 
     results_set = ActiveSearch::Mongoid::Index.search(text, conditions, options)
 
     Proxy.new(results_set, text, options)
+  end
+
+  protected
+
+  def self.clean_locale(conditions, options)
+    locale = options[:locale] || I18n.locale
+    conditions[:locale] ||= locale
+
+    conditions.delete(:locale) if options[:locale] == false
   end
 
   module Mongoid

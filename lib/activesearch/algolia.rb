@@ -9,8 +9,10 @@ require 'activesearch/algolia/worker'
 module ActiveSearch
 
   def self.search(text, conditions = {}, options = {})
-    locale = options[:locale] || I18n.locale
-    conditions[:locale] ||= locale
+    conditions.symbolize_keys!
+    options.symbolize_keys!
+
+    clean_locale(conditions, options)
 
     results_set = Algolia::Client.new.query_text(text, { tags: conditions_to_tags(conditions) }, options)
 
@@ -18,6 +20,13 @@ module ActiveSearch
   end
 
   protected
+
+  def self.clean_locale(conditions, options)
+    locale = options[:locale] || I18n.locale
+    conditions[:locale] ||= locale
+
+    conditions.delete(:locale) if options[:locale] == false
+  end
 
   def self.conditions_to_tags(conditions)
     conditions.map { |c| c.join(':') }.join(',')
